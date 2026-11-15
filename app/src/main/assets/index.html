@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Inventário</title>
+<style>
+:root{
+  --bg:#f4f5f7; --card:#fff; --text:#1b1f24; --muted:#6b7280; --line:#e5e7eb;
+  --primary:#2f6feb; --primary-soft:#e8f0ff; --danger:#d93025; --warn:#b45309; --ok:#15803d;
+  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.06),0 1px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0f1115;--card:#181b21;--text:#e7e9ee;--muted:#9aa1ad;--line:#2a2f38;--primary:#5b8ff9;--primary-soft:#1d2a44;--danger:#ff6b60;--warn:#f0a94b;--ok:#4ade80}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif}
+body{padding-bottom:76px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 16px 8px}
+header h1{font-size:20px;margin:0;display:flex;align-items:center;gap:8px}
+header .sub{color:var(--muted);font-size:13px;margin-top:2px}
+.back{border:0;background:none;color:var(--primary);font-size:22px;padding:0 6px 0 0;cursor:pointer}
+main{padding:0 16px 16px}
+.search{display:flex;gap:8px;margin:6px 0 10px}
+input,select,textarea{width:100%;font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+textarea{min-height:70px;resize:vertical}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin:8px 0;overflow:hidden}
+.li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line);cursor:pointer}
+.li:first-child{border-top:0}
+.li .ic{flex:none;width:38px;height:38px;border-radius:10px;background:var(--primary-soft);display:grid;place-items:center;font-size:19px}
+.li .main{flex:1;min-width:0}
+.li .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .s{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .q{flex:none;text-align:right;font-weight:700}
+.li .q small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.badge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--line);color:var(--text);margin-left:4px;vertical-align:1px}
+.badge.danger{background:color-mix(in srgb,var(--danger) 18%,transparent);color:var(--danger)}
+.badge.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.badge.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 2px 4px;display:flex;justify-content:space-between;align-items:center}
+.empty{text-align:center;color:var(--muted);padding:36px 10px}
+.empty .big{font-size:40px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:600;background:var(--primary);color:#fff;cursor:pointer}
+.btn.sec2{background:var(--primary-soft);color:var(--primary)}
+.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:var(--danger)}
+.btn.sm{padding:7px 10px;font-size:13px}
+.btn:disabled{opacity:.5}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.actions .btn{flex-direction:column;font-size:12px;padding:10px 4px;gap:2px}
+.actions .btn span{font-size:20px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;padding:12px 14px}
+.kv div:nth-child(odd){color:var(--muted)}
+.big-qty{font-size:30px;font-weight:800;padding:14px 14px 0}
+.big-qty small{font-size:15px;color:var(--muted);font-weight:500}
+.fab{position:fixed;right:18px;bottom:86px;width:56px;height:56px;border-radius:18px;border:0;background:var(--primary);color:#fff;font-size:28px;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;z-index:6}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);z-index:7;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:8px 0 10px;font:inherit;font-size:12px;cursor:pointer}
+nav button span{display:block;font-size:21px;line-height:1.3}
+nav button.on{color:var(--primary);font-weight:600}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px 22px;animation:up .18s ease-out}
+.sheet h2{margin:0 0 4px;font-size:18px}
+.sheet .foot{display:flex;gap:8px;margin-top:16px}.sheet .foot .btn{flex:1}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}@keyframes fade{from{opacity:0}}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:14px;max-width:90vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.radio{display:flex;gap:8px}.radio label{flex:1;margin:0;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;border-radius:10px;text-align:center;font-size:14px;cursor:pointer}
+.radio input{display:none}.radio input:checked+span{color:var(--primary);font-weight:700}
+.radio label:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.crumb{color:var(--muted);font-size:13px}
+.crumb a{color:var(--primary);text-decoration:none;cursor:pointer}
+.switch{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
+.switch input{width:auto;transform:scale(1.3)}
+.pad{padding:12px 14px}
+</style>
+</head>
+<body>
+<header id="hdr"></header>
+<main id="app"></main>
+<button class="fab" id="fab" hidden>+</button>
+<nav id="nav">
+  <button data-tab="items"><span>🔎</span>Itens</button>
+  <button data-tab="storages"><span>📦</span>Armazéns</button>
+  <button data-tab="history"><span>🕘</span>Histórico</button>
+  <button data-tab="more"><span>⚙️</span>Backup</button>
+</nav>
+
+<script>
+"use strict";
+/* ====================== Persistência ====================== */
+const N = window.Android || null;
+const DB_FILE = "db.json", CFG_FILE = "cfg.json";
+function rawRead(name){ try{ return N ? N.read(name) : localStorage.getItem("inv_"+name); }catch(e){ return null; } }
+function rawWrite(name, s){ try{ return N ? N.write(name, s) : (localStorage.setItem("inv_"+name, s), true); }catch(e){ return false; } }
+
+function emptyDB(){ return {schema:1, storages:[], items:[], loans:[], moves:[], meta:{createdAt:Date.now(), updatedAt:Date.now()}}; }
+function normalizeDB(d){
+  const e = emptyDB();
+  if(!d || typeof d!=="object") return e;
+  for(const k of ["storages","items","loans","moves"]) e[k] = Array.isArray(d[k]) ? d[k] : [];
+  e.meta = Object.assign(e.meta, d.meta||{});
+  return e;
+}
+let db = normalizeDB(JSON.parse(rawRead(DB_FILE) || "null"));
+let cfg = Object.assign({s3:{endpoint:"",region:"us-east-1",bucket:"",prefix:"inventario/",accessKey:"",secretKey:"",auto:false}, lastBackup:0, dirty:false}, JSON.parse(rawRead(CFG_FILE) || "{}"));
+
+function save(){
+  db.meta.updatedAt = Date.now();
+  if(!rawWrite(DB_FILE, JSON.stringify(db))) toast("⚠️ Falha ao salvar!");
+  cfg.dirty = true; saveCfg();
+}
+function saveCfg(){ rawWrite(CFG_FILE, JSON.stringify(cfg)); }
+
+/* chamadas assíncronas ao nativo */
+let cbSeq = 0; const cbs = {};
+window.__nativeCb = (id, ok, data) => { const c = cbs[id]; if(!c) return; delete cbs[id]; ok ? c.res(data) : c.rej(new Error(data)); };
+function nativeCall(fn, ...args){ return new Promise((res, rej) => { const id = ++cbSeq; cbs[id] = {res, rej}; N[fn](id, ...args); }); }
+
+/* ====================== Utilidades ====================== */
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const num = v => { const n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? Math.round(n*1000)/1000 : 0; };
+const fq = n => (Math.round(n*1000)/1000).toLocaleString("pt-BR");
+const fdate = t => new Date(t).toLocaleString("pt-BR", {day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
+function toast(msg){ const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
+
+const TYPES = {"Cômodo":"🏠","Armário":"🗄️","Prateleira":"📚","Caixa":"📦","Balde":"🪣","Gaveta":"🗃️","Sacola":"🛍️","Mala":"🧳","Veículo":"🚗","Outro":"📁"};
+const CONDS = ["Novo","Bom","Usado","Desgastado","Danificado","Para conserto"];
+const UNITS = ["un","pç","par","cx","pct","rolo","kg","g","L","mL","m","cm","m²"];
+const condClass = c => ({"Novo":"ok","Bom":"ok","Danificado":"danger","Para conserto":"danger","Desgastado":"warn"}[c] || "");
+
+const S = id => db.storages.find(s => s.id === id);
+const I = id => db.items.find(i => i.id === id);
+function path(id){ const out=[]; let s=S(id), g=0; while(s && g++<50){ out.unshift(s.name); s=S(s.parentId); } return out.join(" › ") || "—"; }
+function descendants(id){ const ids=[id]; for(let i=0;i<ids.length;i++) db.storages.forEach(s=>{ if(s.parentId===ids[i]) ids.push(s.id); }); return ids; }
+function storageOptions(sel, excludeTree){
+  const ex = excludeTree ? descendants(excludeTree) : [];
+  return db.storages.filter(s=>!ex.includes(s.id)).map(s=>({id:s.id,p:path(s.id)})).sort((a,b)=>a.p.localeCompare(b.p))
+    .map(o=>`<option value="${o.id}" ${o.id===sel?"selected":""}>${esc(o.p)}</option>`).join("");
+}
+const openLoans = itemId => db.loans.filter(l => l.qty - l.returned > 0 && (!itemId || l.itemId === itemId));
+const loanedQty = itemId => openLoans(itemId).reduce((a,l)=>a + l.qty - l.returned, 0);
+
+function logMove(type, item, qty, extra={}){
+  db.moves.unshift(Object.assign({id:uid(), date:Date.now(), type, itemId:item.id, itemName:item.name, unit:item.unit, qty}, extra));
+  if(db.moves.length > 5000) db.moves.length = 5000;
+}
+/* acha item "igual" em outro armazém para mesclar */
+function findTwin(item, storageId){
+  return db.items.find(i => i.id!==item.id && i.storageId===storageId && norm(i.name)===norm(item.name) && i.unit===item.unit && (i.condition||"")===(item.condition||""));
+}
+
+/* ====================== Navegação ====================== */
+let tab = "items", stack = [];
+const ui = {q:"", filter:"all", hist:"all"};
+function go(view, push=true){ if(push) stack.push(view); render(); window.scrollTo(0,0); }
+function cur(){ return stack[stack.length-1] || {v:tab}; }
+function setTab(t){ tab=t; stack=[]; render(); window.scrollTo(0,0); }
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => setTab(b.dataset.tab));
+window.onBack = () => {
+  if(document.querySelector(".sheet-bg")){ closeSheet(); return true; }
+  if(stack.length){ stack.pop(); render(); return true; }
+  if(tab!=="items"){ setTab("items"); return true; }
+  return false;
+};
+
+function header(title, sub, back){
+  $("#hdr").innerHTML = `<h1>${back?`<button class="back" onclick="onBack()">‹</button>`:""}${title}</h1>${sub?`<div class="sub">${sub}</div>`:""}`;
+}
+function fab(fn){ const f=$("#fab"); f.hidden=!fn; f.onclick=fn||null; }
+
+function render(){
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
+  const c = cur();
+  const views = {items:vItems, storages:vStorages, history:vHistory, more:vMore, storage:vStorage, item:vItem};
+  (views[c.v] || vItems)(c);
+}
+
+/* ====================== Telas ====================== */
+function itemRow(i, showPath=true){
+  const lq = loanedQty(i.id), low = i.minQty>0 && i.qty < i.minQty;
+  const st = S(i.storageId);
+  return `<div class="li" onclick="go({v:'item',id:'${i.id}'})">
+    <div class="ic">${st?TYPES[st.type]||"📁":"❔"}</div>
+    <div class="main"><div class="t">${esc(i.name)}${i.condition?`<span class="badge ${condClass(i.condition)}">${esc(i.condition)}</span>`:""}</div>
+    <div class="s">${showPath?esc(path(i.storageId)):esc(i.category||i.notes||"")}</div></div>
+    <div class="q" style="${low||i.qty===0?"color:var(--danger)":""}">${fq(i.qty)} ${esc(i.unit)}${lq?`<small>+${fq(lq)} fora</small>`:low?`<small>mín ${fq(i.minQty)}</small>`:""}</div></div>`;
+}
+function storageRow(s){
+  const ids = descendants(s.id);
+  const n = db.items.filter(i=>ids.includes(i.storageId)).length;
+  const subs = db.storages.filter(x=>x.parentId===s.id).length;
+  return `<div class="li" onclick="go({v:'storage',id:'${s.id}'})">
+    <div class="ic">${TYPES[s.type]||"📁"}</div>
+    <div class="main"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.type)}${s.location?" · "+esc(s.location):""}${subs?` · ${subs} dentro`:""}</div></div>
+    <div class="q">${n}<small>itens</small></div></div>`;
+}
+
+function vItems(){
+  header("Inventário", `${db.items.length} itens · ${db.storages.length} armazéns${openLoans().length?` · ${openLoans().length} fora`:""}`);
+  const app = $("#app");
+  if(!app.querySelector("#q")){
+    app.innerHTML = `<div class="search"><input id="q" type="search" placeholder="Buscar item, categoria, local, obs…" autocomplete="off"></div>
+      <div class="chips" id="chips"></div><div id="list"></div>`;
+    const q = $("#q"); q.value = ui.q;
+    q.oninput = () => { ui.q = q.value; listItems(); };
+  }
+  const chips = [["all","Todos"],["out","Emprestados"],["low","Estoque baixo"],["zero","Zerados"],...CONDS.map(c=>["c:"+c,c])];
+  $("#chips").innerHTML = chips.map(([k,l])=>`<button class="chip ${ui.filter===k?"on":""}" onclick="ui.filter='${k}';vItems()">${l}</button>`).join("");
+  listItems();
+  fab(() => itemForm());
+}
+function listItems(){
+  const terms = norm(ui.q).split(/\s+/).filter(Boolean);
+  let list = db.items.filter(i => {
+    const f = ui.filter;
+    if(f==="out" && !loanedQty(i.id)) return false;
+    if(f==="low" && !(i.minQty>0 && i.qty<i.minQty)) return false;
+    if(f==="zero" && i.qty!==0) return false;
+    if(f.startsWith("c:") && i.condition!==f.slice(2)) return false;
+    if(!terms.length) return true;
+    const hay = norm([i.name,i.category,i.notes,i.condition,i.unit,path(i.storageId),...openLoans(i.id).map(l=>l.who)].join(" "));
+    return terms.every(t => hay.includes(t));
+  }).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+  const el = $("#list");
+  if(!db.storages.length){
+    el.innerHTML = `<div class="empty"><div class="big">📦</div><p>Comece criando um <b>armazém</b><br>(caixa, balde, cômodo, armário…)</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`; return;
+  }
+  if(!list.length){ el.innerHTML = `<div class="empty"><div class="big">🔎</div><p>${db.items.length?"Nada encontrado.":"Nenhum item ainda. Toque em + para adicionar."}</p></div>`; return; }
+  el.innerHTML = `<div class="card">${list.slice(0,500).map(i=>itemRow(i)).join("")}</div>${list.length>500?`<p class="hint">Mostrando 500 de ${list.length}. Refine a busca.</p>`:""}`;
+}
+
+function vStorages(){
+  header("Armazéns", "Caixas, baldes, cômodos, armários…");
+  const roots = db.storages.filter(s=>!s.parentId || !S(s.parentId)).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+  $("#app").innerHTML = roots.length ? `<div class="card">${roots.map(storageRow).join("")}</div>`
+    : `<div class="empty"><div class="big">📦</div><p>Nenhum armazém ainda.</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`;
+  fab(() => storageForm());
+}
+
+function vStorage({id}){
+  const s = S(id); if(!s){ stack.pop(); return render(); }
+  const parent = S(s.parentId);
+  header(`${TYPES[s.type]||"📁"} ${esc(s.name)}`, `<span class="crumb">${parent?`em <a onclick="go({v:'storage',id:'${parent.id}'})">${esc(path(parent.id))}</a> · `:""}${esc(s.type)}${s.location?" · "+esc(s.location):""}</span>`, true);
+  const subs = db.storages.filter(x=>x.parentId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+  const items = db.items.filter(i=>i.storageId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+  $("#app").innerHTML = `
+    ${s.notes?`<div class="card pad">${esc(s.notes)}</div>`:""}
+    <div class="row" style="margin:8px 0">
+      <button class="btn sec2 sm" onclick="itemForm(null,'${id}')">＋ Item</button>
+      <button class="btn sec2 sm" onclick="storageForm(null,'${id}')">＋ Armazém dentro</button>
+      <button class="btn ghost sm" onclick="storageForm('${id}')">✏️ Editar</button>
+    </div>
+    ${subs.length?`<div class="sec">Dentro deste</div><div class="card">${subs.map(storageRow).join("")}</div>`:""}
+    <div class="sec">Itens (${items.length})</div>
+    ${items.length?`<div class="card">${items.map(i=>itemRow(i,false)).join("")}</div>`:`<div class="empty">Vazio</div>`}
+    <div style="margin-top:20px"><button class="btn ghost sm" style="color:var(--danger)" onclick="deleteStorage('${id}')">🗑️ Excluir armazém</button></div>`;
+  fab(() => itemForm(null, id));
+}
+
+function vItem({id}){
+  const i = I(id); if(!i){ stack.pop(); return render(); }
+  header(esc(i.name), `<span class="crumb">em <a onclick="go({v:'storage',id:'${i.storageId}'})">${esc(path(i.storageId))}</a></span>`, true);
+  const loans = openLoans(id), moves = db.moves.filter(m=>m.itemId===id).slice(0,30);
+  $("#app").innerHTML = `
+    <div class="card">
+      <div class="big-qty">${fq(i.qty)} <small>${esc(i.unit)}${loans.length?` · +${fq(loanedQty(id))} emprestado`:""}</small></div>
+      <div class="kv">
+        <div>Estado</div><div>${i.condition?`<span class="badge ${condClass(i.condition)}" style="margin:0">${esc(i.condition)}</span>`:"—"}</div>
+        <div>Categoria</div><div>${esc(i.category||"—")}</div>
+        ${i.minQty?`<div>Qtd. mínima</div><div>${fq(i.minQty)} ${esc(i.unit)}</div>`:""}
+        <div>Observação</div><div style="white-space:pre-wrap">${esc(i.notes||"—")}</div>
+        <div>Atualizado</div><div>${fdate(i.updatedAt||i.createdAt)}</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="withdrawForm('${id}')"><span>📤</span>Retirar</button>
+      <button class="btn" onclick="addQtyForm('${id}')"><span>📥</span>Adicionar</button>
+      <button class="btn" onclick="transferForm('${id}')"><span>🔀</span>Transferir</button>
+      <button class="btn sec2" onclick="itemForm('${id}')"><span>✏️</span>Editar</button>
+      <button class="btn sec2" onclick="itemForm(null,'${i.storageId}','${id}')"><span>📄</span>Duplicar</button>
+      <button class="btn sec2" style="color:var(--danger)" onclick="deleteItem('${id}')"><span>🗑️</span>Excluir</button>
+    </div>
+    ${loans.length?`<div class="sec">Fora / a devolver</div><div class="card">${loans.map(loanRow).join("")}</div>`:""}
+    <div class="sec">Movimentações</div>
+    ${moves.length?`<div class="card">${moves.map(m=>moveRow(m,false)).join("")}</div>`:`<div class="empty">Sem movimentações</div>`}`;
+  fab(null);
+}
+
+function loanRow(l){
+  const rem = l.qty - l.returned;
+  return `<div class="li" onclick="returnForm('${l.id}')"><div class="ic">🤝</div>
+    <div class="main"><div class="t">${esc(l.itemName)}${l.who?` · ${esc(l.who)}`:""}</div><div class="s">${fdate(l.date)}${l.note?" · "+esc(l.note):""}</div></div>
+    <div class="q">${fq(rem)} ${esc(l.unit)}<small style="color:var(--primary)">Devolver ›</small></div></div>`;
+}
+const MV = {criado:["🆕","Cadastro"],entrada:["📥","Entrada"],retirada:["📤","Retirada"],emprestimo:["🤝","Empréstimo"],devolucao:["↩️","Devolução"],transferencia:["🔀","Transferência"],ajuste:["✏️","Ajuste"],exclusao:["🗑️","Exclusão"]};
+function moveRow(m, showName=true){
+  const [ic, label] = MV[m.type] || ["•", m.type];
+  const sign = ["entrada","devolucao","criado"].includes(m.type) ? "+" : ["retirada","emprestimo","exclusao"].includes(m.type) ? "−" : "";
+  const where = m.type==="transferencia" ? `${esc(m.from)} → ${esc(m.to)}` : esc(m.where||"");
+  return `<div class="li" ${I(m.itemId)?`onclick="go({v:'item',id:'${m.itemId}'})"`:""}><div class="ic">${ic}</div>
+    <div class="main"><div class="t">${showName?esc(m.itemName)+" · ":""}${label}</div>
+    <div class="s">${fdate(m.date)}${m.who?" · "+esc(m.who):""}${where?" · "+where:""}${m.note?" · "+esc(m.note):""}</div></div>
+    <div class="q">${sign}${fq(m.qty)} <small>${esc(m.unit)}</small></div></div>`;
+}
+
+function vHistory(){
+  header("Histórico", "Retiradas, devoluções, transferências…");
+  const loans = openLoans();
+  const types = [["all","Tudo"],["out","Saídas"],["devolucao","Devoluções"],["transferencia","Transferências"],["entrada","Entradas"],["ajuste","Ajustes"]];
+  const list = db.moves.filter(m => ui.hist==="all" || (ui.hist==="out" ? ["retirada","emprestimo"].includes(m.type) : m.type===ui.hist)).slice(0,300);
+  $("#app").innerHTML = `
+    ${loans.length?`<div class="sec">A devolver (${loans.length})</div><div class="card">${loans.map(loanRow).join("")}</div>`:""}
+    <div class="sec">Movimentações</div>
+    <div class="chips">${types.map(([k,l])=>`<button class="chip ${ui.hist===k?"on":""}" onclick="ui.hist='${k}';vHistory()">${l}</button>`).join("")}</div>
+    ${list.length?`<div class="card">${list.map(m=>moveRow(m)).join("")}</div>`:`<div class="empty">Nada por aqui</div>`}`;
+  fab(null);
+}
+
+function vMore(){
+  header("Backup e configurações", "Seus dados ficam só no aparelho. Faça backup!");
+  const s3 = cfg.s3, has = s3.bucket && s3.accessKey && s3.secretKey;
+  $("#app").innerHTML = `
+    <div class="sec">Arquivo</div>
+    <div class="card pad">
+      <div class="row"><button class="btn" onclick="exportJSON()">⬇️ Exportar backup</button><button class="btn ghost" onclick="importJSON()">⬆️ Importar</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn sec2" onclick="exportCSV()">📊 Exportar planilha (CSV)</button></div>
+      <p class="hint">O backup (.json) contém tudo: armazéns, itens, empréstimos e histórico. Você pode salvar direto no Google Drive pelo seletor de arquivos.</p>
+    </div>
+    <div class="sec">Backup no S3 ${has?`<span class="badge ${cfg.lastBackup?"ok":"warn"}">${cfg.lastBackup?"último: "+fdate(cfg.lastBackup):"nunca"}</span>`:""}</div>
+    <div class="card pad">
+      ${!N?`<p class="hint">⚠️ Backup S3 só funciona dentro do app Android.</p>`:""}
+      <form id="s3f">
+        <label>Bucket</label><input name="bucket" value="${esc(s3.bucket)}" placeholder="meu-bucket" autocapitalize="off">
+        <div class="row"><div><label>Região</label><input name="region" value="${esc(s3.region)}" placeholder="us-east-1" autocapitalize="off"></div>
+        <div><label>Pasta (prefixo)</label><input name="prefix" value="${esc(s3.prefix)}" placeholder="inventario/" autocapitalize="off"></div></div>
+        <label>Endpoint (opcional — R2, MinIO, Backblaze, Wasabi…)</label><input name="endpoint" value="${esc(s3.endpoint)}" placeholder="vazio = AWS" autocapitalize="off">
+        <label>Access Key ID</label><input name="accessKey" value="${esc(s3.accessKey)}" autocapitalize="off" autocomplete="off">
+        <label>Secret Access Key</label><input name="secretKey" type="password" value="${esc(s3.secretKey)}" autocomplete="off">
+        <label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input type="checkbox" name="auto" style="width:auto" ${s3.auto?"checked":""}> Backup automático ao sair do app (se houve alterações)</label>
+        <div class="row" style="margin-top:12px"><button class="btn ghost" type="submit">💾 Salvar</button><button class="btn" type="button" onclick="s3Backup(false)">☁️ Backup agora</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn sec2" type="button" onclick="s3Restore()">⤵️ Restaurar do S3</button></div>
+        <p class="hint">Salva <code>${esc(s3.prefix||"")}inventario-AAAA-MM-DD.json</code> (1 por dia, guarda histórico) e <code>${esc(s3.prefix||"")}inventario-latest.json</code>. Use uma chave IAM com acesso apenas a este bucket (s3:PutObject, s3:GetObject, s3:ListBucket).</p>
+      </form>
+    </div>
+    <div class="sec">Sobre</div>
+    <div class="card pad">
+      <div>Versão: <b>${esc(N?N.version():"navegador")}</b></div>
+      <div class="hint">${db.items.length} itens · ${db.storages.length} armazéns · ${db.moves.length} movimentações</div>
+      <div style="margin-top:12px"><button class="btn ghost sm" style="color:var(--danger)" onclick="wipeAll()">Apagar todos os dados</button></div>
+    </div>`;
+  $("#s3f").onsubmit = e => { e.preventDefault(); readS3Form(); toast("Configuração salva"); vMore(); };
+  fab(null);
+}
+
+/* ====================== Formulários ====================== */
+let sheetEl = null;
+function openSheet(title, body, onSubmit, submitLabel="Salvar"){
+  closeSheet();
+  sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
+  sheetEl.innerHTML = `<form class="sheet" autocomplete="off"><h2>${title}</h2>${body}
+    <div class="foot"><button type="button" class="btn ghost" data-close>Cancelar</button><button class="btn" type="submit">${submitLabel}</button></div></form>`;
+  sheetEl.onclick = e => { if(e.target===sheetEl || e.target.hasAttribute("data-close")) closeSheet(); };
+  const form = sheetEl.querySelector("form");
+  form.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(form)); if(onSubmit(d, form) !== false){ closeSheet(); render(); } };
+  document.body.appendChild(sheetEl);
+  const first = form.querySelector("[autofocus]"); if(first) setTimeout(()=>first.focus(), 60);
+  return form;
+}
+function closeSheet(){ if(sheetEl){ sheetEl.remove(); sheetEl=null; } }
+
+function storageForm(id, parentId){
+  const s = id ? S(id) : {name:"", type:"Caixa", parentId:parentId||"", location:"", notes:""};
+  openSheet(id?"Editar armazém":"Novo armazém", `
+    <label>Nome *</label><input name="name" required value="${esc(s.name)}" placeholder="Ex.: Caixa ferramentas" ${id?"":"autofocus"}>
+    <label>Tipo</label><select name="type">${Object.keys(TYPES).map(t=>`<option ${t===s.type?"selected":""}>${t}</option>`).join("")}</select>
+    <label>Dentro de (opcional)</label><select name="parentId"><option value="">— nenhum —</option>${storageOptions(s.parentId, id)}</select>
+    <label>Localização / referência</label><input name="location" value="${esc(s.location)}" placeholder="Ex.: garagem, prateleira de cima">
+    <label>Observação</label><textarea name="notes">${esc(s.notes)}</textarea>`, d => {
+    if(!d.name.trim()) return false;
+    if(id){ Object.assign(s, {name:d.name.trim(), type:d.type, parentId:d.parentId||"", location:d.location.trim(), notes:d.notes.trim()}); }
+    else { const n = {id:uid(), name:d.name.trim(), type:d.type, parentId:d.parentId||"", location:d.location.trim(), notes:d.notes.trim(), createdAt:Date.now()}; db.storages.push(n); save(); toast("Armazém criado"); if(tab==="storages" && !stack.length) stack.push({v:"storage",id:n.id}); return; }
+    save(); toast("Salvo");
+  });
+}
+function deleteStorage(id){
+  const s = S(id), subs = db.storages.filter(x=>x.parentId===id), items = db.items.filter(i=>i.storageId===id);
+  if(subs.length || items.length){
+    const parent = S(s.parentId);
+    if(!parent){ alert(`"${s.name}" não está vazio (${items.length} itens, ${subs.length} armazéns dentro). Transfira ou exclua o conteúdo primeiro.`); return; }
+    if(!confirm(`"${s.name}" não está vazio. Mover o conteúdo para "${parent.name}" e excluir?`)) return;
+    subs.forEach(x=>x.parentId=parent.id);
+    items.forEach(i=>{ logMove("transferencia", i, i.qty, {from:path(id), to:path(parent.id), note:"armazém excluído"}); i.storageId=parent.id; });
+  } else if(!confirm(`Excluir "${s.name}"?`)) return;
+  db.storages = db.storages.filter(x=>x.id!==id);
+  save(); toast("Armazém excluído"); stack.pop(); render();
+}
+
+function itemForm(id, storageId, copyFrom){
+  if(!db.storages.length){ toast("Crie um armazém primeiro"); return storageForm(); }
+  const base = id ? I(id) : copyFrom ? Object.assign({}, I(copyFrom), {qty:1}) : {name:"", qty:1, unit:"un", condition:"Bom", category:"", notes:"", minQty:0, storageId: storageId || (cur().v==="storage"?cur().id:"") || (S(ui.lastSt)?ui.lastSt:"")};
+  const cats = [...new Set(db.items.map(i=>i.category).filter(Boolean))].sort();
+  openSheet(id?"Editar item":"Novo item", `
+    <label>Nome *</label><input name="name" required value="${esc(base.name)}" placeholder="Ex.: Furadeira" ${id?"":"autofocus"}>
+    <div class="row"><div><label>Quantidade</label><input name="qty" inputmode="decimal" value="${fq(base.qty)}"></div>
+    <div><label>Unidade</label><input name="unit" list="units" value="${esc(base.unit)}"></div></div>
+    <datalist id="units">${UNITS.map(u=>`<option value="${u}">`).join("")}</datalist>
+    <label>Armazém *</label><select name="storageId" required>${storageOptions(base.storageId)}</select>
+    <label>Estado</label><select name="condition"><option value="">—</option>${CONDS.map(c=>`<option ${c===base.condition?"selected":""}>${c}</option>`).join("")}</select>
+    <div class="row"><div><label>Categoria</label><input name="category" list="cats" value="${esc(base.category)}" placeholder="Ex.: Ferramentas"></div>
+    <div><label>Qtd. mínima (alerta)</label><input name="minQty" inputmode="decimal" value="${base.minQty?fq(base.minQty):""}" placeholder="0"></div></div>
+    <datalist id="cats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+    <label>Observação</label><textarea name="notes" placeholder="Marca, modelo, cor, detalhes…">${esc(base.notes)}</textarea>`, d => {
+    if(!d.name.trim()) return false;
+    ui.lastSt = d.storageId;
+    const vals = {name:d.name.trim(), qty:Math.max(0,num(d.qty)), unit:d.unit.trim()||"un", storageId:d.storageId, condition:d.condition, category:d.category.trim(), minQty:num(d.minQty), notes:d.notes.trim(), updatedAt:Date.now()};
+    if(id){
+      const it = I(id), oldQty = it.qty, oldSt = it.storageId;
+      if(oldSt!==vals.storageId) logMove("transferencia", it, it.qty, {from:path(oldSt), to:path(vals.storageId), note:"edição"});
+      Object.assign(it, vals);
+      if(oldQty!==vals.qty) logMove("ajuste", it, vals.qty-oldQty, {where:path(it.storageId), note:`${fq(oldQty)} → ${fq(vals.qty)}`});
+      toast("Item salvo");
+    } else {
+      const it = Object.assign({id:uid(), createdAt:Date.now()}, vals);
+      db.items.push(it); logMove("criado", it, it.qty, {where:path(it.storageId)}); toast("Item adicionado");
+    }
+    save();
+  });
+}
+function deleteItem(id){
+  const i = I(id);
+  if(!confirm(`Excluir "${i.name}"? ${loanedQty(id)?"Ele tem empréstimos em aberto.":""}`)) return;
+  logMove("exclusao", i, i.qty, {where:path(i.storageId)});
+  db.items = db.items.filter(x=>x.id!==id);
+  save(); toast("Item excluído"); stack.pop(); render();
+}
+
+function qtyField(max, unit, val){
+  return `<label>Quantidade${max!=null?` (disponível: ${fq(max)} ${esc(unit)})`:""}</label>
+  <div class="row"><input name="qty" inputmode="decimal" value="${fq(val)}" autofocus>${max!=null?`<button type="button" class="btn ghost" style="flex:0 0 auto" onclick="this.form.qty.value='${fq(max)}'">Tudo</button>`:""}</div>`;
+}
+function withdrawForm(id){
+  const i = I(id);
+  if(i.qty<=0){ toast("Sem quantidade disponível"); return; }
+  const people = [...new Set(db.loans.map(l=>l.who).filter(Boolean))];
+  openSheet(`Retirar · ${esc(i.name)}`, `${qtyField(i.qty, i.unit, Math.min(1,i.qty))}
+    <label>Tipo</label><div class="radio">
+      <label><input type="radio" name="mode" value="emprestimo" checked><span>🤝 Vai voltar</span></label>
+      <label><input type="radio" name="mode" value="retirada"><span>📤 Baixa definitiva</span></label></div>
+    <p class="hint">"Vai voltar" fica na lista de pendentes para devolução (uso, empréstimo). "Baixa" é consumo, venda, descarte.</p>
+    <label>Com quem / para quê</label><input name="who" list="people" placeholder="Ex.: João, obra da cozinha">
+    <datalist id="people">${people.map(p=>`<option value="${esc(p)}">`).join("")}</datalist>
+    <label>Observação</label><input name="note">`, d => {
+    const q = num(d.qty);
+    if(q<=0 || q>i.qty){ toast("Quantidade inválida"); return false; }
+    i.qty = num(i.qty - q); i.updatedAt = Date.now();
+    if(d.mode==="emprestimo"){
+      db.loans.push({id:uid(), itemId:i.id, itemName:i.name, unit:i.unit, storageId:i.storageId, qty:q, returned:0, who:d.who.trim(), note:d.note.trim(), date:Date.now(), snapshot:{name:i.name,unit:i.unit,condition:i.condition,category:i.category}});
+    }
+    logMove(d.mode, i, q, {who:d.who.trim(), note:d.note.trim(), where:path(i.storageId)});
+    save(); toast(d.mode==="emprestimo"?"Retirado (pendente de devolução)":"Baixa registrada");
+  }, "Retirar");
+}
+function addQtyForm(id){
+  const i = I(id);
+  openSheet(`Adicionar · ${esc(i.name)}`, `${qtyField(null, i.unit, 1)}<label>Observação</label><input name="note" placeholder="Ex.: comprei mais">`, d => {
+    const q = num(d.qty); if(q<=0){ toast("Quantidade inválida"); return false; }
+    i.qty = num(i.qty + q); i.updatedAt = Date.now();
+    logMove("entrada", i, q, {note:d.note.trim(), where:path(i.storageId)}); save(); toast("Quantidade adicionada");
+  }, "Adicionar");
+}
+function transferForm(id){
+  const i = I(id);
+  if(db.storages.length<2){ toast("Crie outro armazém para transferir"); return; }
+  openSheet(`Transferir · ${esc(i.name)}`, `${qtyField(i.qty, i.unit, i.qty)}
+    <label>De</label><input disabled value="${esc(path(i.storageId))}">
+    <label>Para *</label><select name="to" required>${storageOptions("", null).replace(`value="${i.storageId}"`, `value="${i.storageId}" disabled`)}</select>
+    <label>Observação</label><input name="note">`, d => {
+    const q = num(d.qty);
+    if(q<=0 || q>i.qty){ toast("Quantidade inválida"); return false; }
+    if(d.to===i.storageId){ toast("Escolha outro armazém"); return false; }
+    const from = path(i.storageId), to = path(d.to);
+    const twin = findTwin(i, d.to);
+    logMove("transferencia", i, q, {from, to, note:d.note.trim()});
+    if(q===i.qty){
+      if(twin){ twin.qty = num(twin.qty+q); twin.updatedAt=Date.now(); db.loans.forEach(l=>{ if(l.itemId===i.id) l.itemId=twin.id; }); db.moves.forEach(m=>{ if(m.itemId===i.id) m.itemId=twin.id; }); db.items = db.items.filter(x=>x.id!==i.id); stack[stack.length-1] = {v:"item", id:twin.id}; }
+      else { i.storageId = d.to; i.updatedAt = Date.now(); }
+    } else {
+      i.qty = num(i.qty-q); i.updatedAt = Date.now();
+      if(twin){ twin.qty = num(twin.qty+q); twin.updatedAt=Date.now(); }
+      else db.items.push(Object.assign({}, i, {id:uid(), qty:q, storageId:d.to, createdAt:Date.now(), updatedAt:Date.now()}));
+    }
+    save(); toast("Transferido");
+  }, "Transferir");
+}
+function returnForm(loanId){
+  const l = db.loans.find(x=>x.id===loanId), rem = num(l.qty - l.returned);
+  const item = I(l.itemId);
+  const defSt = item ? item.storageId : (S(l.storageId) ? l.storageId : "");
+  openSheet(`Devolver · ${esc(l.itemName)}`, `
+    <p class="hint">Retirado em ${fdate(l.date)}${l.who?` por/para <b>${esc(l.who)}</b>`:""}.</p>
+    ${qtyField(rem, l.unit, rem)}
+    <label>Devolver para</label><select name="to">${storageOptions(defSt)}</select>
+    <label>Estado ao voltar</label><select name="condition"><option value="">(sem mudança)</option>${CONDS.map(c=>`<option>${c}</option>`).join("")}</select>
+    <label>Observação</label><input name="note">`, d => {
+    const q = num(d.qty);
+    if(q<=0 || q>rem){ toast("Quantidade inválida"); return false; }
+    l.returned = num(l.returned + q);
+    let target = item;
+    if(target && target.storageId!==d.to){ target = findTwin(item, d.to) || null; }
+    if(!target){
+      const sn = item || l.snapshot || {name:l.itemName, unit:l.unit};
+      target = findTwin({id:"_", name:sn.name, unit:sn.unit, condition:sn.condition}, d.to);
+      if(!target){ target = {id:uid(), name:sn.name, unit:sn.unit, condition:sn.condition||"", category:sn.category||"", notes:"", minQty:0, qty:0, storageId:d.to, createdAt:Date.now()}; db.items.push(target); }
+    }
+    target.qty = num(target.qty + q); target.updatedAt = Date.now();
+    if(d.condition) target.condition = d.condition;
+    logMove("devolucao", target, q, {who:l.who, note:d.note.trim(), where:path(d.to)});
+    save(); toast("Devolvido ✔");
+  }, "Devolver");
+}
+
+/* ====================== Backup ====================== */
+const stamp = () => new Date().toISOString().slice(0,10);
+function backupJSON(){ return JSON.stringify(Object.assign({app:"inventario", exportedAt:new Date().toISOString()}, db), null, 1); }
+async function saveFile(name, mime, content){
+  if(N){ try{ await nativeCall("exportFile", name, mime, content); toast("Arquivo salvo ✔"); } catch(e){ if(e.message!=="Cancelado") toast("Erro: "+e.message); } return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([content], {type:mime})); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+}
+function exportJSON(){ saveFile(`inventario-${stamp()}.json`, "application/json", backupJSON()); }
+function exportCSV(){
+  const q = v => `"${String(v??"").replace(/"/g,'""')}"`;
+  const rows = [["Item","Quantidade","Unidade","Estado","Categoria","Armazém","Emprestado","Qtd mínima","Observação"]];
+  db.items.forEach(i => rows.push([i.name, String(i.qty).replace(".",","), i.unit, i.condition, i.category, path(i.storageId), String(loanedQty(i.id)).replace(".",","), i.minQty||"", i.notes]));
+  saveFile(`inventario-${stamp()}.csv`, "text/csv", "﻿" + rows.map(r=>r.map(q).join(";")).join("\r\n"));
+}
+function applyImport(text){
+  let d; try{ d = JSON.parse(text); }catch(e){ toast("Arquivo inválido"); return; }
+  if(!d || !Array.isArray(d.items) || !Array.isArray(d.storages)){ toast("Não é um backup do Inventário"); return; }
+  if(!confirm(`Substituir os dados atuais por este backup?\n\nBackup: ${d.items.length} itens, ${d.storages.length} armazéns.\nAtual: ${db.items.length} itens, ${db.storages.length} armazéns.`)) return;
+  rawWrite("db-before-import.json", JSON.stringify(db));
+  db = normalizeDB(d); save(); stack=[]; toast("Backup restaurado ✔"); render();
+}
+function importJSON(){
+  if(N){ nativeCall("importFile").then(applyImport).catch(e=>{ if(e.message!=="Cancelado") toast("Erro: "+e.message); }); return; }
+  const inp = document.createElement("input"); inp.type="file"; inp.accept=".json,application/json";
+  inp.onchange = () => { const f = inp.files[0]; if(f) f.text().then(applyImport); }; inp.click();
+}
+function readS3Form(){
+  const f = $("#s3f"); if(!f) return;
+  const d = Object.fromEntries(new FormData(f));
+  let prefix = (d.prefix||"").trim(); if(prefix && !prefix.endsWith("/")) prefix += "/";
+  cfg.s3 = {bucket:d.bucket.trim(), region:d.region.trim()||"us-east-1", prefix, endpoint:d.endpoint.trim(), accessKey:d.accessKey.trim(), secretKey:d.secretKey.trim(), auto:!!d.auto};
+  saveCfg();
+}
+function s3req(extra){ return nativeCall("s3", JSON.stringify(Object.assign({}, cfg.s3, extra))); }
+let s3busy = false;
+async function s3Backup(silent){
+  if(!silent) readS3Form();
+  if(!N){ if(!silent) toast("Disponível apenas no app Android"); return; }
+  const s3 = cfg.s3;
+  if(!s3.bucket || !s3.accessKey || !s3.secretKey){ if(!silent) toast("Configure bucket e chaves"); return; }
+  if(s3busy) return; s3busy = true;
+  if(!silent) toast("Enviando…");
+  try{
+    const body = backupJSON();
+    await s3req({method:"PUT", key:`${s3.prefix}inventario-${stamp()}.json`, body});
+    await s3req({method:"PUT", key:`${s3.prefix}inventario-latest.json`, body});
+    cfg.lastBackup = Date.now(); cfg.dirty = false; saveCfg();
+    if(!silent){ toast("Backup enviado ✔"); if(tab==="more" && !stack.length) vMore(); }
+  }catch(e){ if(!silent) alert("Falha no backup S3:\n"+e.message); }
+  finally{ s3busy = false; }
+}
+async function s3Restore(){
+  readS3Form();
+  if(!N){ toast("Disponível apenas no app Android"); return; }
+  const s3 = cfg.s3;
+  if(!s3.bucket || !s3.accessKey || !s3.secretKey){ toast("Configure bucket e chaves"); return; }
+  try{
+    toast("Listando backups…");
+    const xml = await s3req({method:"GET", key:"", query:{"list-type":"2", prefix:s3.prefix}});
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
+    const files = [...doc.getElementsByTagName("Contents")].map(c=>({key:c.getElementsByTagName("Key")[0]?.textContent, size:+c.getElementsByTagName("Size")[0]?.textContent, date:c.getElementsByTagName("LastModified")[0]?.textContent}))
+      .filter(f=>f.key && f.key.endsWith(".json")).sort((a,b)=>b.key.localeCompare(a.key));
+    if(!files.length){ toast("Nenhum backup encontrado"); return; }
+    openSheet("Restaurar do S3", `<label>Escolha o backup</label><select name="key">${files.map(f=>`<option value="${esc(f.key)}">${esc(f.key.slice(s3.prefix.length))} · ${(f.size/1024).toFixed(1)} KB</option>`).join("")}</select>
+      <p class="hint">Os dados atuais serão substituídos (uma cópia local é guardada antes).</p>`, d => {
+      toast("Baixando…");
+      s3req({method:"GET", key:d.key}).then(applyImport).catch(e=>alert("Erro: "+e.message));
+    }, "Restaurar");
+  }catch(e){ alert("Falha ao acessar S3:\n"+e.message); }
+}
+window.onAppPause = () => { if(cfg.s3.auto && cfg.dirty) s3Backup(true); };
+function wipeAll(){
+  if(!confirm("Apagar TODOS os dados do inventário? Isso não pode ser desfeito (faça um backup antes).")) return;
+  if(prompt('Digite APAGAR para confirmar')!=="APAGAR") return;
+  rawWrite("db-before-wipe.json", JSON.stringify(db));
+  db = emptyDB(); save(); stack=[]; setTab("items"); toast("Dados apagados");
+}
+
+render();
+</script>
+</body>
+</html>

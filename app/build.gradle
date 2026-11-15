@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+}
+
+// versionCode SEMPRE crescente (minutos desde 2024-01-01), calculado no CI.
+// Isso garante que cada APK novo instale por cima do anterior.
+def envCode = System.getenv("VERSION_CODE")
+def vCode = envCode ? envCode.toInteger() : 1
+def vName = System.getenv("VERSION_NAME") ?: "dev"
+
+android {
+    namespace 'app.inventario.pessoal'
+    compileSdk 35
+
+    defaultConfig {
+        // NUNCA altere o applicationId: senão o Android trata como outro app.
+        applicationId "app.inventario.pessoal"
+        minSdk 26
+        targetSdk 35
+        versionCode vCode
+        versionName vName
+    }
+
+    signingConfigs {
+        // A MESMA chave é usada em todas as versões -> atualização sem desinstalar.
+        release {
+            storeFile file(System.getenv("KEYSTORE_FILE") ?: "${rootDir}/keystore/inventario.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: "inventario"
+            keyAlias System.getenv("KEY_ALIAS") ?: "inventario"
+            keyPassword System.getenv("KEY_PASSWORD") ?: "inventario"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+}
