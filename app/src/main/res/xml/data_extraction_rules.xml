@@ -2,7 +2,6 @@
 <data-extraction-rules>
     <cloud-backup>
         <include domain="file" path="db.json" />
-        <exclude domain="file" path="cfg.json" />
     </cloud-backup>
     <device-transfer>
         <include domain="file" path="db.json" />
