@@ -8,7 +8,7 @@ Sem servidor. Os dados ficam só no aparelho, com exportação e backup opcional
 ## Funcionalidades
 
 - **Armazéns** aninhados (ex.: Garagem › Armário › Caixa A), com tipo, localização e observação
-- **Itens** com quantidade (aceita decimais), unidade de medida, estado, categoria,
+- **Itens** com quantidade (aceita decimais), unidade de medida, **valor unitário (R$)**, estado, categoria,
   quantidade mínima (alerta de estoque baixo) e observação
 - **Busca** instantânea (ignora acentos) por nome, categoria, observação, local ou pessoa;
   filtros: emprestados, estoque baixo, zerados, por estado
@@ -17,8 +17,12 @@ Sem servidor. Os dados ficam só no aparelho, com exportação e backup opcional
 - **Adicionar** quantidade, **transferir** (total ou parcial, mescla com item igual no destino),
   **duplicar**, editar, excluir
 - **Histórico** completo de movimentações
-- **Backup**: exportar/importar `.json` (pode salvar direto no Google Drive pelo seletor),
-  exportar planilha `.csv`, e **backup no S3** (AWS, Cloudflare R2, MinIO, Backblaze B2, Wasabi…)
+- **Imprimir / PDF**: todos os itens, um armazém (com ou sem os de dentro), itens selecionados
+  ou o resultado da busca — com opção de valores, estado, categoria, observações, agrupamento
+  por armazém e coluna de conferência ☐. No Android use “Salvar como PDF” no diálogo de impressão.
+- **Valores**: total por item, por armazém e geral
+- **Backup**: exportar/importar `.json` (pode salvar direto no Google Drive pelo seletor)
+  e **backup no S3** (AWS, Cloudflare R2, MinIO, Backblaze B2, Wasabi…)
   manual ou automático ao sair do app
 - Tema claro/escuro automático
 

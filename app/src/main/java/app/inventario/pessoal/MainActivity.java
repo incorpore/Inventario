@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.print.PrintAttributes;
+import android.print.PrintManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -44,6 +46,7 @@ public class MainActivity extends Activity {
     private WebView web;
     private int pendingCb = 0;
     private String pendingExport = null;
+    private WebView printView = null; // mantém referência durante a impressão
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -197,6 +200,31 @@ public class MainActivity extends Activity {
                 i.setType(mime);
                 i.putExtra(Intent.EXTRA_TITLE, fileName);
                 try { startActivityForResult(i, REQ_EXPORT); } catch (Exception e) { cb(id, false, e.getMessage()); }
+            });
+        }
+
+        /** Abre o diálogo de impressão do Android (permite "Salvar como PDF"). */
+        @JavascriptInterface
+        public void printHtml(String title, String html) {
+            runOnUiThread(() -> {
+                WebView pv = new WebView(MainActivity.this);
+                pv.getSettings().setJavaScriptEnabled(false);
+                pv.setWebViewClient(new WebViewClient() {
+                    private boolean done = false;
+                    @Override
+                    public void onPageFinished(WebView view, String url) {
+                        if (done) return;
+                        done = true;
+                        PrintManager pm = (PrintManager) getSystemService(PRINT_SERVICE);
+                        String job = title.replaceAll("[\\\\/:*?\"<>|]", "_");
+                        pm.print(job, view.createPrintDocumentAdapter(job),
+                                new PrintAttributes.Builder()
+                                        .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                                        .build());
+                    }
+                });
+                printView = pv;
+                pv.loadDataWithBaseURL("https://appassets.androidplatform.net/", html, "text/html", "UTF-8", null);
             });
         }
 

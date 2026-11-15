@@ -70,7 +70,7 @@ nav button.on{color:var(--primary);font-weight:600}
 .sheet h2{margin:0 0 4px;font-size:18px}
 .sheet .foot{display:flex;gap:8px;margin-top:16px}.sheet .foot .btn{flex:1}
 @keyframes up{from{transform:translateY(40px);opacity:.4}}@keyframes fade{from{opacity:0}}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:14px;max-width:90vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.toast{pointer-events:none;position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:14px;max-width:90vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .radio{display:flex;gap:8px}.radio label{flex:1;margin:0;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;border-radius:10px;text-align:center;font-size:14px;cursor:pointer}
 .radio input{display:none}.radio input:checked+span{color:var(--primary);font-weight:700}
 .radio label:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
@@ -80,6 +80,13 @@ nav button.on{color:var(--primary);font-weight:600}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
 .switch input{width:auto;transform:scale(1.3)}
 .pad{padding:12px 14px}
+header .hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hbtn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer;flex:none}
+.li .ic.chk{background:var(--card);border:2px solid var(--line)}
+.li.sel .ic.chk{background:var(--primary);border-color:var(--primary);color:#fff}
+.selbar{position:fixed;left:0;right:0;bottom:62px;z-index:8;background:var(--text);color:var(--bg);display:flex;align-items:center;gap:8px;padding:10px 14px}
+.selbar b{flex:1}.selbar .btn.sec2{background:transparent;color:var(--bg);border:1px solid var(--muted)}.selbar .btn{padding:8px 12px;font-size:13px}
+.checks label{display:flex;gap:8px;align-items:center;color:var(--text);margin:8px 0;font-size:14px}.checks input{width:auto;transform:scale(1.2)}
 </style>
 </head>
 <body>
@@ -129,8 +136,10 @@ const $ = s => document.querySelector(s);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const num = v => { const n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? Math.round(n*1000)/1000 : 0; };
+const num = v => { let t = String(v ?? "").trim().replace(/[R$\s]/g, ""); if(t.includes(",")) t = t.replace(/\./g, "").replace(",", "."); const n = parseFloat(t); return isFinite(n) ? Math.round(n*1000)/1000 : 0; };
 const fq = n => (Math.round(n*1000)/1000).toLocaleString("pt-BR");
+const money = n => (n||0).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+const itemTotal = i => (i.value||0) * ((i.qty||0) + loanedQty(i.id));
 const fdate = t => new Date(t).toLocaleString("pt-BR", {day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
 function toast(msg){ const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
 
@@ -162,20 +171,21 @@ function findTwin(item, storageId){
 
 /* ====================== Navegação ====================== */
 let tab = "items", stack = [];
-const ui = {q:"", filter:"all", hist:"all"};
+const ui = {q:"", filter:"all", hist:"all", selMode:false, sel:new Set()};
 function go(view, push=true){ if(push) stack.push(view); render(); window.scrollTo(0,0); }
 function cur(){ return stack[stack.length-1] || {v:tab}; }
 function setTab(t){ tab=t; stack=[]; render(); window.scrollTo(0,0); }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => setTab(b.dataset.tab));
 window.onBack = () => {
   if(document.querySelector(".sheet-bg")){ closeSheet(); return true; }
+  if(ui.selMode && tab==="items" && !stack.length){ selExit(); return true; }
   if(stack.length){ stack.pop(); render(); return true; }
   if(tab!=="items"){ setTab("items"); return true; }
   return false;
 };
 
-function header(title, sub, back){
-  $("#hdr").innerHTML = `<h1>${back?`<button class="back" onclick="onBack()">‹</button>`:""}${title}</h1>${sub?`<div class="sub">${sub}</div>`:""}`;
+function header(title, sub, back, actions=""){
+  $("#hdr").innerHTML = `<div class="hrow"><h1>${back?`<button class="back" onclick="onBack()">‹</button>`:""}${title}</h1>${actions}</div>${sub?`<div class="sub">${sub}</div>`:""}`;
 }
 function fab(fn){ const f=$("#fab"); f.hidden=!fn; f.onclick=fn||null; }
 
@@ -184,16 +194,35 @@ function render(){
   const c = cur();
   const views = {items:vItems, storages:vStorages, history:vHistory, more:vMore, storage:vStorage, item:vItem};
   (views[c.v] || vItems)(c);
+  selBar();
 }
+function selBar(){
+  let b = $("#selbar");
+  const show = ui.selMode && tab==="items" && !stack.length;
+  if(!show){ if(b) b.remove(); return; }
+  if(!b){ b = document.createElement("div"); b.id="selbar"; b.className="selbar"; document.body.appendChild(b); }
+  b.innerHTML = `<b>${ui.sel.size} selecionado(s)</b>
+    <button class="btn sec2" onclick="selAll()">Todos</button>
+    <button class="btn" onclick="printForm({scope:'sel'})" ${ui.sel.size?"":"disabled"}>🖨️ PDF</button>
+    <button class="btn ghost" onclick="selExit()">✕</button>`;
+}
+function rowTap(id){
+  if(ui.selMode && tab==="items" && !stack.length){ ui.sel.has(id) ? ui.sel.delete(id) : ui.sel.add(id); listItems(); selBar(); }
+  else go({v:'item',id});
+}
+function selStart(){ ui.selMode = true; render(); }
+function selExit(){ ui.selMode = false; ui.sel.clear(); render(); }
+function selAll(){ const l = filteredItems(); const all = l.every(i=>ui.sel.has(i.id)); l.forEach(i=> all ? ui.sel.delete(i.id) : ui.sel.add(i.id)); listItems(); selBar(); }
 
 /* ====================== Telas ====================== */
 function itemRow(i, showPath=true){
   const lq = loanedQty(i.id), low = i.minQty>0 && i.qty < i.minQty;
   const st = S(i.storageId);
-  return `<div class="li" onclick="go({v:'item',id:'${i.id}'})">
-    <div class="ic">${st?TYPES[st.type]||"📁":"❔"}</div>
+  const sm = ui.selMode && tab==="items" && !stack.length, on = sm && ui.sel.has(i.id);
+  return `<div class="li ${on?"sel":""}" onclick="rowTap('${i.id}')">
+    <div class="ic ${sm?"chk":""}">${sm?(on?"✓":""):st?TYPES[st.type]||"📁":"❔"}</div>
     <div class="main"><div class="t">${esc(i.name)}${i.condition?`<span class="badge ${condClass(i.condition)}">${esc(i.condition)}</span>`:""}</div>
-    <div class="s">${showPath?esc(path(i.storageId)):esc(i.category||i.notes||"")}</div></div>
+    <div class="s">${showPath?esc(path(i.storageId)):esc(i.category||i.notes||"")}${i.value?" · "+money(i.value):""}</div></div>
     <div class="q" style="${low||i.qty===0?"color:var(--danger)":""}">${fq(i.qty)} ${esc(i.unit)}${lq?`<small>+${fq(lq)} fora</small>`:low?`<small>mín ${fq(i.minQty)}</small>`:""}</div></div>`;
 }
 function storageRow(s){
@@ -207,7 +236,9 @@ function storageRow(s){
 }
 
 function vItems(){
-  header("Inventário", `${db.items.length} itens · ${db.storages.length} armazéns${openLoans().length?` · ${openLoans().length} fora`:""}`);
+  const tot = db.items.reduce((a,i)=>a+itemTotal(i),0);
+  header("Inventário", `${db.items.length} itens · ${db.storages.length} armazéns${openLoans().length?` · ${openLoans().length} fora`:""}${tot?` · ${money(tot)}`:""}`, false,
+    `<div class="row" style="flex:none">${ui.selMode?"":`<button class="hbtn" onclick="selStart()">☑️ Selecionar</button>`}<button class="hbtn" onclick="printForm({scope:ui.q||ui.filter!=='all'?'search':'all'})">🖨️</button></div>`);
   const app = $("#app");
   if(!app.querySelector("#q")){
     app.innerHTML = `<div class="search"><input id="q" type="search" placeholder="Buscar item, categoria, local, obs…" autocomplete="off"></div>
@@ -218,11 +249,11 @@ function vItems(){
   const chips = [["all","Todos"],["out","Emprestados"],["low","Estoque baixo"],["zero","Zerados"],...CONDS.map(c=>["c:"+c,c])];
   $("#chips").innerHTML = chips.map(([k,l])=>`<button class="chip ${ui.filter===k?"on":""}" onclick="ui.filter='${k}';vItems()">${l}</button>`).join("");
   listItems();
-  fab(() => itemForm());
+  fab(ui.selMode ? null : () => itemForm());
 }
-function listItems(){
+function filteredItems(){
   const terms = norm(ui.q).split(/\s+/).filter(Boolean);
-  let list = db.items.filter(i => {
+  return db.items.filter(i => {
     const f = ui.filter;
     if(f==="out" && !loanedQty(i.id)) return false;
     if(f==="low" && !(i.minQty>0 && i.qty<i.minQty)) return false;
@@ -232,6 +263,9 @@ function listItems(){
     const hay = norm([i.name,i.category,i.notes,i.condition,i.unit,path(i.storageId),...openLoans(i.id).map(l=>l.who)].join(" "));
     return terms.every(t => hay.includes(t));
   }).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+}
+function listItems(){
+  const list = filteredItems();
   const el = $("#list");
   if(!db.storages.length){
     el.innerHTML = `<div class="empty"><div class="big">📦</div><p>Comece criando um <b>armazém</b><br>(caixa, balde, cômodo, armário…)</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`; return;
@@ -254,12 +288,15 @@ function vStorage({id}){
   header(`${TYPES[s.type]||"📁"} ${esc(s.name)}`, `<span class="crumb">${parent?`em <a onclick="go({v:'storage',id:'${parent.id}'})">${esc(path(parent.id))}</a> · `:""}${esc(s.type)}${s.location?" · "+esc(s.location):""}</span>`, true);
   const subs = db.storages.filter(x=>x.parentId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
   const items = db.items.filter(i=>i.storageId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+  const all = descendants(id), tot = db.items.filter(i=>all.includes(i.storageId)).reduce((a,i)=>a+itemTotal(i),0);
   $("#app").innerHTML = `
+    ${tot?`<div class="hint" style="margin:0 2px 4px">Valor total (incl. sub-armazéns): <b>${money(tot)}</b></div>`:""}
     ${s.notes?`<div class="card pad">${esc(s.notes)}</div>`:""}
     <div class="row" style="margin:8px 0">
       <button class="btn sec2 sm" onclick="itemForm(null,'${id}')">＋ Item</button>
       <button class="btn sec2 sm" onclick="storageForm(null,'${id}')">＋ Armazém dentro</button>
-      <button class="btn ghost sm" onclick="storageForm('${id}')">✏️ Editar</button>
+      <button class="btn ghost sm" onclick="storageForm('${id}')">✏️</button>
+      <button class="btn ghost sm" onclick="printForm({scope:'storage',storageId:'${id}'})">🖨️</button>
     </div>
     ${subs.length?`<div class="sec">Dentro deste</div><div class="card">${subs.map(storageRow).join("")}</div>`:""}
     <div class="sec">Itens (${items.length})</div>
@@ -278,6 +315,7 @@ function vItem({id}){
       <div class="kv">
         <div>Estado</div><div>${i.condition?`<span class="badge ${condClass(i.condition)}" style="margin:0">${esc(i.condition)}</span>`:"—"}</div>
         <div>Categoria</div><div>${esc(i.category||"—")}</div>
+        ${i.value?`<div>Valor unit.</div><div>${money(i.value)}</div><div>Valor total</div><div><b>${money(itemTotal(i))}</b></div>`:""}
         ${i.minQty?`<div>Qtd. mínima</div><div>${fq(i.minQty)} ${esc(i.unit)}</div>`:""}
         <div>Observação</div><div style="white-space:pre-wrap">${esc(i.notes||"—")}</div>
         <div>Atualizado</div><div>${fdate(i.updatedAt||i.createdAt)}</div>
@@ -334,7 +372,7 @@ function vMore(){
     <div class="sec">Arquivo</div>
     <div class="card pad">
       <div class="row"><button class="btn" onclick="exportJSON()">⬇️ Exportar backup</button><button class="btn ghost" onclick="importJSON()">⬆️ Importar</button></div>
-      <div class="row" style="margin-top:8px"><button class="btn sec2" onclick="exportCSV()">📊 Exportar planilha (CSV)</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn sec2" onclick="printForm({scope:'all'})">🖨️ Imprimir / salvar PDF</button></div>
       <p class="hint">O backup (.json) contém tudo: armazéns, itens, empréstimos e histórico. Você pode salvar direto no Google Drive pelo seletor de arquivos.</p>
     </div>
     <div class="sec">Backup no S3 ${has?`<span class="badge ${cfg.lastBackup?"ok":"warn"}">${cfg.lastBackup?"último: "+fdate(cfg.lastBackup):"nunca"}</span>`:""}</div>
@@ -420,10 +458,11 @@ function itemForm(id, storageId, copyFrom){
     <div class="row"><div><label>Categoria</label><input name="category" list="cats" value="${esc(base.category)}" placeholder="Ex.: Ferramentas"></div>
     <div><label>Qtd. mínima (alerta)</label><input name="minQty" inputmode="decimal" value="${base.minQty?fq(base.minQty):""}" placeholder="0"></div></div>
     <datalist id="cats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+    <label>Valor unitário (R$)</label><input name="value" inputmode="decimal" value="${base.value?String(base.value).replace(".",","):""}" placeholder="0,00">
     <label>Observação</label><textarea name="notes" placeholder="Marca, modelo, cor, detalhes…">${esc(base.notes)}</textarea>`, d => {
     if(!d.name.trim()) return false;
     ui.lastSt = d.storageId;
-    const vals = {name:d.name.trim(), qty:Math.max(0,num(d.qty)), unit:d.unit.trim()||"un", storageId:d.storageId, condition:d.condition, category:d.category.trim(), minQty:num(d.minQty), notes:d.notes.trim(), updatedAt:Date.now()};
+    const vals = {name:d.name.trim(), qty:Math.max(0,num(d.qty)), unit:d.unit.trim()||"un", storageId:d.storageId, condition:d.condition, category:d.category.trim(), minQty:num(d.minQty), value:Math.round(num(d.value)*100)/100, notes:d.notes.trim(), updatedAt:Date.now()};
     if(id){
       const it = I(id), oldQty = it.qty, oldSt = it.storageId;
       if(oldSt!==vals.storageId) logMove("transferencia", it, it.qty, {from:path(oldSt), to:path(vals.storageId), note:"edição"});
@@ -465,7 +504,7 @@ function withdrawForm(id){
     if(q<=0 || q>i.qty){ toast("Quantidade inválida"); return false; }
     i.qty = num(i.qty - q); i.updatedAt = Date.now();
     if(d.mode==="emprestimo"){
-      db.loans.push({id:uid(), itemId:i.id, itemName:i.name, unit:i.unit, storageId:i.storageId, qty:q, returned:0, who:d.who.trim(), note:d.note.trim(), date:Date.now(), snapshot:{name:i.name,unit:i.unit,condition:i.condition,category:i.category}});
+      db.loans.push({id:uid(), itemId:i.id, itemName:i.name, unit:i.unit, storageId:i.storageId, qty:q, returned:0, who:d.who.trim(), note:d.note.trim(), date:Date.now(), snapshot:{name:i.name,unit:i.unit,condition:i.condition,category:i.category,value:i.value||0}});
     }
     logMove(d.mode, i, q, {who:d.who.trim(), note:d.note.trim(), where:path(i.storageId)});
     save(); toast(d.mode==="emprestimo"?"Retirado (pendente de devolução)":"Baixa registrada");
@@ -521,13 +560,83 @@ function returnForm(loanId){
     if(!target){
       const sn = item || l.snapshot || {name:l.itemName, unit:l.unit};
       target = findTwin({id:"_", name:sn.name, unit:sn.unit, condition:sn.condition}, d.to);
-      if(!target){ target = {id:uid(), name:sn.name, unit:sn.unit, condition:sn.condition||"", category:sn.category||"", notes:"", minQty:0, qty:0, storageId:d.to, createdAt:Date.now()}; db.items.push(target); }
+      if(!target){ target = {id:uid(), name:sn.name, unit:sn.unit, condition:sn.condition||"", category:sn.category||"", value:sn.value||0, notes:"", minQty:0, qty:0, storageId:d.to, createdAt:Date.now()}; db.items.push(target); }
     }
     target.qty = num(target.qty + q); target.updatedAt = Date.now();
     if(d.condition) target.condition = d.condition;
     logMove("devolucao", target, q, {who:l.who, note:d.note.trim(), where:path(d.to)});
     save(); toast("Devolvido ✔");
   }, "Devolver");
+}
+
+/* ====================== Impressão / PDF ====================== */
+function printForm(o={}){
+  if(!db.items.length){ toast("Nenhum item para imprimir"); return; }
+  const scope = o.scope || "all";
+  const searchN = filteredItems().length;
+  const opt = Object.assign({values:true, notes:true, cond:true, cat:false, check:false, group:true, subs:true}, JSON.parse(localStorage.getItem("inv_print")||"{}"));
+  const r = (v, label, dis) => `<label><input type="radio" name="scope" value="${v}" ${v===scope?"checked":""} ${dis?"disabled":""}><span>${label}</span></label>`;
+  const c = (k, label) => `<label><input type="checkbox" name="${k}" ${opt[k]?"checked":""}> ${label}</label>`;
+  openSheet("Imprimir / PDF", `
+    <label>O que imprimir</label>
+    <div class="radio" style="display:grid;grid-template-columns:1fr 1fr">${r("all","Todos")}${r("storage","Armazém")}${r("sel",`Selecionados (${ui.sel.size})`, !ui.sel.size)}${r("search",`Busca atual (${searchN})`)}</div>
+    <label>Armazém</label><select name="storageId">${storageOptions(o.storageId||"")}</select>
+    <div class="checks">${c("subs","Incluir armazéns que estão dentro")}${c("group","Agrupar por armazém")}${c("values","Valores (unitário e total)")}${c("cond","Estado")}${c("cat","Categoria")}${c("notes","Observações")}${c("check","Coluna de conferência ☐")}</div>
+    <label>Título</label><input name="title" value="Inventário">
+    <p class="hint">No Android, escolha a impressora <b>"Salvar como PDF"</b> no diálogo que abrir.</p>`, d => {
+    const op = {}; ["values","notes","cond","cat","check","group","subs"].forEach(k=>op[k]=!!d[k]);
+    try{ localStorage.setItem("inv_print", JSON.stringify(op)); }catch(e){}
+    let items, sub = "";
+    if(d.scope==="storage"){ const ids = op.subs ? descendants(d.storageId) : [d.storageId]; items = db.items.filter(i=>ids.includes(i.storageId)); sub = path(d.storageId); }
+    else if(d.scope==="sel"){ items = db.items.filter(i=>ui.sel.has(i.id)); sub = "Itens selecionados"; }
+    else if(d.scope==="search"){ items = filteredItems(); sub = ui.q ? `Busca: “${ui.q}”` : "Filtro aplicado"; }
+    else { items = db.items.slice(); sub = "Todos os itens"; }
+    if(!items.length){ toast("Nada para imprimir"); return false; }
+    doPrint(d.title.trim()||"Inventário", sub, items, op);
+  }, "Gerar");
+}
+function reportHTML(title, sub, items, op){
+  const cols = [op.check&&["☐","c"], ["Item",""], ["Qtd","n"], op.cond&&["Estado",""], op.cat&&["Categoria",""], op.values&&["Valor un.","n"], op.values&&["Total","n"], op.notes&&["Observação",""], !op.group&&["Armazém",""]].filter(Boolean);
+  const row = i => { const lq = loanedQty(i.id); return `<tr>${[
+      op.check&&`<td class="c">☐</td>`,
+      `<td><b>${esc(i.name)}</b></td>`,
+      `<td class="n">${fq(i.qty)} ${esc(i.unit)}${lq?`<br><small>+${fq(lq)} fora</small>`:""}</td>`,
+      op.cond&&`<td>${esc(i.condition||"")}</td>`, op.cat&&`<td>${esc(i.category||"")}</td>`,
+      op.values&&`<td class="n">${i.value?money(i.value):""}</td>`, op.values&&`<td class="n">${i.value?money(itemTotal(i)):""}</td>`,
+      op.notes&&`<td class="o">${esc(i.notes||"")}</td>`, !op.group&&`<td>${esc(path(i.storageId))}</td>`].filter(Boolean).join("")}</tr>`; };
+  const sum = l => l.reduce((a,i)=>a+itemTotal(i),0);
+  const table = (l) => `<table><thead><tr>${cols.map(([h,cl])=>`<th class="${cl}">${h}</th>`).join("")}</tr></thead><tbody>${l.map(row).join("")}</tbody>
+    ${op.values&&sum(l)?`<tfoot><tr><td colspan="${cols.length}" class="n">Subtotal: <b>${money(sum(l))}</b></td></tr></tfoot>`:""}</table>`;
+  const sorted = items.slice().sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+  let body;
+  if(op.group){
+    const groups = {}; sorted.forEach(i=>{ (groups[i.storageId] = groups[i.storageId] || []).push(i); });
+    body = Object.keys(groups).map(k=>({k, p:path(k)})).sort((a,b)=>a.p.localeCompare(b.p,"pt-BR"))
+      .map(({k,p})=>{ const st = S(k); return `<section><h2>${st?TYPES[st.type]||"":""} ${esc(p)} <small>(${groups[k].length})</small></h2>${table(groups[k])}</section>`; }).join("");
+  } else body = table(sorted);
+  const tot = sum(items);
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+    @page{size:A4;margin:12mm}
+    body{font:10.5pt/1.35 system-ui,Roboto,Arial,sans-serif;color:#111;margin:0}
+    h1{font-size:17pt;margin:0}.meta{color:#555;margin:2px 0 12px;font-size:9.5pt}
+    h2{font-size:11.5pt;margin:14px 0 4px;padding-bottom:3px;border-bottom:2px solid #2f6feb}h2 small{color:#666;font-weight:400}
+    table{width:100%;border-collapse:collapse;margin-bottom:6px}th,td{border-bottom:1px solid #ddd;padding:4px 5px;text-align:left;vertical-align:top}
+    th{font-size:8.5pt;text-transform:uppercase;color:#555;background:#f3f5f9}.n{text-align:right;white-space:nowrap}.c{width:16px;text-align:center}
+    td.o{color:#444;font-size:9pt}small{color:#666}tfoot td{border:0}tr,section h2{break-inside:avoid}thead{display:table-header-group}
+    .tot{margin-top:12px;text-align:right;font-size:12pt}
+  </style></head><body>
+  <h1>${esc(title)}</h1><div class="meta">${esc(sub)} · ${items.length} itens · gerado em ${fdate(Date.now())}</div>
+  ${body}
+  ${op.values&&tot?`<div class="tot">Valor total: <b>${money(tot)}</b></div>`:""}
+  </body></html>`;
+}
+function doPrint(title, sub, items, op){
+  const html = reportHTML(title, sub, items, op);
+  const name = `${title} ${stamp()}`;
+  if(N && N.printHtml){ N.printHtml(name, html); return; }
+  const fr = document.createElement("iframe"); fr.style.cssText = "position:fixed;width:0;height:0;border:0";
+  document.body.appendChild(fr); fr.contentDocument.open(); fr.contentDocument.write(html); fr.contentDocument.close();
+  setTimeout(()=>{ fr.contentWindow.print(); setTimeout(()=>fr.remove(), 2000); }, 300);
 }
 
 /* ====================== Backup ====================== */
@@ -538,12 +647,6 @@ async function saveFile(name, mime, content){
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([content], {type:mime})); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
 }
 function exportJSON(){ saveFile(`inventario-${stamp()}.json`, "application/json", backupJSON()); }
-function exportCSV(){
-  const q = v => `"${String(v??"").replace(/"/g,'""')}"`;
-  const rows = [["Item","Quantidade","Unidade","Estado","Categoria","Armazém","Emprestado","Qtd mínima","Observação"]];
-  db.items.forEach(i => rows.push([i.name, String(i.qty).replace(".",","), i.unit, i.condition, i.category, path(i.storageId), String(loanedQty(i.id)).replace(".",","), i.minQty||"", i.notes]));
-  saveFile(`inventario-${stamp()}.csv`, "text/csv", "﻿" + rows.map(r=>r.map(q).join(";")).join("\r\n"));
-}
 function applyImport(text){
   let d; try{ d = JSON.parse(text); }catch(e){ toast("Arquivo inválido"); return; }
   if(!d || !Array.isArray(d.items) || !Array.isArray(d.storages)){ toast("Não é um backup do Inventário"); return; }
