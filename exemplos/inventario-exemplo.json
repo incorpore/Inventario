@@ -5,7 +5,8 @@
     "Obrigatório: name. Os demais campos são opcionais.",
     "storage: nome do armazém ('Caixa A') ou caminho completo ('Garagem > Armário > Caixa A').",
     "Se o armazém não vier ou não for encontrado, o app pergunta onde colocar (ou cria o armazém).",
-    "Também são aceitos nomes em português: nome, quantidade, unidade, valor, estado, categoria, observacao, minimo, armazem."
+    "Também são aceitos nomes em português: nome, quantidade, unidade, valor, estado, categoria, observacao, minimo, armazem.",
+    "photos (opcional): lista de imagens em base64 ou 'data:image/jpeg;base64,...'. São convertidas para WebP ao importar."
   ],
   "_estados_validos": [
     "Novo",

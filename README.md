@@ -24,13 +24,16 @@ Sem servidor. Os dados ficam só no aparelho, com exportação e backup opcional
 - **Devolver**: parcial ou total, para o armazém de origem ou outro, podendo atualizar o estado
 - **Adicionar** quantidade, **transferir** (total ou parcial, mescla com item igual no destino),
   **duplicar**, editar, excluir
+- **Fotos** nos itens e armazéns (câmera ou galeria, várias por item): salvas em **WebP**
+  (≈1280 px, ~60–150 KB cada, mais miniatura de 320 px), com visualizador, foto de capa e
+  miniatura opcional no PDF. A câmera não pede permissão (o app não declara CAMERA).
 - **Histórico** completo de movimentações
 - **Imprimir / PDF**: todos os itens, um armazém (com ou sem os de dentro), itens selecionados
   ou o resultado da busca — com opção de valores, estado, categoria, observações, agrupamento
   por armazém e coluna de conferência ☐. No Android use “Salvar como PDF” no diálogo de impressão.
 - **Valores**: total por item, por armazém e geral
-- **Backup**: exportar/importar `.json` (pode salvar direto no Google Drive pelo seletor)
-  e **backup no S3** (AWS, Cloudflare R2, MinIO, Backblaze B2, Wasabi…)
+- **Backup**: exportar/importar `.json` com ou sem as fotos (pode salvar direto no Google Drive
+  pelo seletor) e **backup no S3** (fotos vão em `fotos/<id>.webp`, enviadas uma única vez) (AWS, Cloudflare R2, MinIO, Backblaze B2, Wasabi…)
   manual ou automático ao sair do app
 - Tema claro/escuro automático
 
