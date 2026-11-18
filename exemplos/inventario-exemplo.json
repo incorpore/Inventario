@@ -1,0 +1,85 @@
+{
+  "app": "inventario-produtos",
+  "_leia_me": [
+    "Lista de produtos para importar no app Inventário.",
+    "Obrigatório: name. Os demais campos são opcionais.",
+    "storage: nome do armazém ('Caixa A') ou caminho completo ('Garagem > Armário > Caixa A').",
+    "Se o armazém não vier ou não for encontrado, o app pergunta onde colocar (ou cria o armazém).",
+    "Também são aceitos nomes em português: nome, quantidade, unidade, valor, estado, categoria, observacao, minimo, armazem."
+  ],
+  "_estados_validos": [
+    "Novo",
+    "Bom",
+    "Usado",
+    "Desgastado",
+    "Danificado",
+    "Para conserto"
+  ],
+  "items": [
+    {
+      "name": "Furadeira de impacto",
+      "qty": 1,
+      "unit": "un",
+      "value": 349.9,
+      "condition": "Bom",
+      "category": "Ferramentas",
+      "notes": "Bosch 650W, com maleta",
+      "storage": "Garagem > Armário de ferramentas"
+    },
+    {
+      "name": "Broca para concreto 8mm",
+      "qty": 4,
+      "unit": "un",
+      "value": 12.5,
+      "condition": "Novo",
+      "category": "Ferramentas",
+      "minQty": 2,
+      "storage": "Garagem > Armário de ferramentas"
+    },
+    {
+      "name": "Parafuso 4x40",
+      "qty": 150,
+      "unit": "un",
+      "value": 0.12,
+      "condition": "Novo",
+      "category": "Fixação",
+      "minQty": 50,
+      "storage": "Caixa de parafusos"
+    },
+    {
+      "name": "Fita isolante",
+      "qty": 3,
+      "unit": "rolo",
+      "value": 6.9,
+      "category": "Elétrica",
+      "storage": "Caixa de elétrica"
+    },
+    {
+      "name": "Extensão 10m",
+      "qty": 2,
+      "unit": "un",
+      "value": 45,
+      "condition": "Usado",
+      "category": "Elétrica"
+    },
+    {
+      "nome": "Lâmpada LED 9W",
+      "quantidade": 6,
+      "unidade": "un",
+      "valor": "8,99",
+      "estado": "Novo",
+      "categoria": "Elétrica",
+      "armazem": "Caixa de elétrica"
+    },
+    {
+      "name": "Tinta acrílica branca",
+      "qty": 3.6,
+      "unit": "L",
+      "value": 89.9,
+      "condition": "Usado",
+      "category": "Pintura",
+      "notes": "Galão aberto",
+      "storage": "Balde azul"
+    }
+  ]
+}

@@ -4,6 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.content.res.Configuration;
+import android.graphics.Color;
+import android.view.View;
+import android.view.Window;
 import android.net.Uri;
 import android.os.Bundle;
 import android.print.PrintAttributes;
@@ -54,6 +58,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         web = new WebView(this);
         web.setFitsSystemWindows(true);
+        applySystemBars();
         setContentView(web);
 
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
@@ -83,6 +88,27 @@ public class MainActivity extends Activity {
         });
         web.addJavascriptInterface(new Bridge(), "Android");
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+    }
+
+    /** Barras do sistema acompanham o tema claro/escuro do app. */
+    private void applySystemBars() {
+        boolean dark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        int bg = dark ? Color.parseColor("#0B0D12") : Color.parseColor("#F5F6FA");
+        Window w = getWindow();
+        w.setStatusBarColor(bg);
+        w.setNavigationBarColor(bg);
+        if (web != null) web.setBackgroundColor(bg);
+        int flags = w.getDecorView().getSystemUiVisibility();
+        if (dark) flags &= ~(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        else flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        w.getDecorView().setSystemUiVisibility(flags);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applySystemBars();
     }
 
     @Override

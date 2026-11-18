@@ -7,6 +7,14 @@ Sem servidor. Os dados ficam só no aparelho, com exportação e backup opcional
 
 ## Funcionalidades
 
+- **Tela inicial (painel)**: valor total, contadores (a devolver, estoque baixo, zerados,
+  movimentações) e gráficos — valor/itens por categoria, itens por armazém, estado dos itens
+  e atividade dos últimos 14 dias; listas de pendências e itens recentes
+- **Importar produtos por JSON** (veja `exemplos/inventario-exemplo.json` ou baixe pelo app):
+  o armazém é identificado pelo nome ou caminho (`Garagem > Armário`); se não vier ou não for
+  encontrado, o app pergunta onde guardar — usar um existente, criar o armazém, ou criá-lo dentro
+  de outro. Itens iguais podem ter a quantidade somada.
+
 - **Armazéns** aninhados (ex.: Garagem › Armário › Caixa A), com tipo, localização e observação
 - **Itens** com quantidade (aceita decimais), unidade de medida, **valor unitário (R$)**, estado, categoria,
   quantidade mínima (alerta de estoque baixo) e observação

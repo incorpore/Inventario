@@ -7,98 +7,214 @@
 <title>Inventário</title>
 <style>
 :root{
-  --bg:#f4f5f7; --card:#fff; --text:#1b1f24; --muted:#6b7280; --line:#e5e7eb;
-  --primary:#2f6feb; --primary-soft:#e8f0ff; --danger:#d93025; --warn:#b45309; --ok:#15803d;
-  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.06),0 1px 8px rgba(0,0,0,.04);
+  --bg:#f5f6fa; --card:#ffffff; --card2:#f0f2f7; --text:#0f172a; --text2:#475569; --muted:#8a94a6; --line:#e6e9f0;
+  --primary:#4f46e5; --primary-2:#7c3aed; --primary-soft:#eef0ff; --on-primary:#fff;
+  --danger:#dc2626; --warn:#b45309; --ok:#15803d;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+  --r:18px; --r-sm:12px;
+  --shadow:0 1px 2px rgba(15,23,42,.04),0 4px 16px rgba(15,23,42,.05);
+  --shadow-lg:0 10px 30px rgba(79,70,229,.25);
+  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
-  :root{--bg:#0f1115;--card:#181b21;--text:#e7e9ee;--muted:#9aa1ad;--line:#2a2f38;--primary:#5b8ff9;--primary-soft:#1d2a44;--danger:#ff6b60;--warn:#f0a94b;--ok:#4ade80}
+  :root:not([data-theme="light"]){
+    --bg:#0b0d12; --card:#151821; --card2:#1c202b; --text:#e8eaf0; --text2:#b4bccb; --muted:#7d8699; --line:#252a37;
+    --primary:#818cf8; --primary-2:#a78bfa; --primary-soft:#1f2240; --on-primary:#0b0d12;
+    --danger:#f87171; --warn:#fbbf24; --ok:#4ade80;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c; --s7:#9085e9; --s8:#e66767;
+    --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-lg:0 10px 30px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0d12; --card:#151821; --card2:#1c202b; --text:#e8eaf0; --text2:#b4bccb; --muted:#7d8699; --line:#252a37;
+  --primary:#818cf8; --primary-2:#a78bfa; --primary-soft:#1f2240; --on-primary:#0b0d12;
+  --danger:#f87171; --warn:#fbbf24; --ok:#4ade80;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c; --s7:#9085e9; --s8:#e66767;
+  --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-lg:0 10px 30px rgba(0,0,0,.4);
+  color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif}
-body{padding-bottom:76px}
-header{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 16px 8px}
-header h1{font-size:20px;margin:0;display:flex;align-items:center;gap:8px}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-bottom:120px;overflow-x:hidden}
+button{font:inherit;color:inherit}
+.i{width:20px;height:20px;flex:none;display:block}
+.i.sm{width:16px;height:16px}.i.lg{width:24px;height:24px}
+
+/* header */
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:14px 16px 10px}
+.hrow{display:flex;align-items:center;gap:10px;min-height:40px}
+.hrow h1{flex:1;min-width:0;font-size:22px;font-weight:750;letter-spacing:-.02em;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header .sub{color:var(--muted);font-size:13px;margin-top:2px}
-.back{border:0;background:none;color:var(--primary);font-size:22px;padding:0 6px 0 0;cursor:pointer}
-main{padding:0 16px 16px}
-.search{display:flex;gap:8px;margin:6px 0 10px}
-input,select,textarea{width:100%;font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+.iconbtn{flex:none;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;color:var(--text)}
+.iconbtn.ghost{border:0;background:transparent;margin-left:-8px}
+.iconbtn:active{transform:scale(.95)}
+main{padding:2px 16px 16px;max-width:760px;margin:0 auto}
+
+/* inputs */
+input,select,textarea{width:100%;font:inherit;color:var(--text);background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:11px 13px;outline:none;transition:border-color .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--primary)}
-textarea{min-height:70px;resize:vertical}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
-.row{display:flex;gap:8px}.row>*{flex:1}
-.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
-.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
-.chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
-.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin:8px 0;overflow:hidden}
-.li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line);cursor:pointer}
-.li:first-child{border-top:0}
-.li .ic{flex:none;width:38px;height:38px;border-radius:10px;background:var(--primary-soft);display:grid;place-items:center;font-size:19px}
+input:disabled{opacity:.7}
+textarea{min-height:76px;resize:vertical}
+label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin:12px 0 5px}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.searchbox{position:relative;margin:4px 0 10px}
+.searchbox .i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.searchbox input{padding-left:42px;border-radius:14px;height:48px;box-shadow:var(--shadow);border-color:transparent}
+.searchbox input:focus{border-color:var(--primary)}
+
+/* chips */
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none;margin:0 -16px;padding-left:16px;padding-right:16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--text2);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--text);border-color:var(--text);color:var(--bg)}
+
+/* cards & lists */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin:10px 0;overflow:hidden}
+.pad{padding:14px 16px}
+.li{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;position:relative}
+.li+.li::before{content:"";position:absolute;top:0;left:64px;right:0;border-top:1px solid var(--line)}
+.li:active{background:var(--card2)}
 .li .main{flex:1;min-width:0}
-.li .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .t{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .li .s{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.li .q{flex:none;text-align:right;font-weight:700}
-.li .q small{display:block;font-weight:400;color:var(--muted);font-size:12px}
-.badge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--line);color:var(--text);margin-left:4px;vertical-align:1px}
-.badge.danger{background:color-mix(in srgb,var(--danger) 18%,transparent);color:var(--danger)}
-.badge.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
-.badge.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
-.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 2px 4px;display:flex;justify-content:space-between;align-items:center}
-.empty{text-align:center;color:var(--muted);padding:36px 10px}
-.empty .big{font-size:40px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:600;background:var(--primary);color:#fff;cursor:pointer}
-.btn.sec2{background:var(--primary-soft);color:var(--primary)}
-.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--line)}
-.btn.danger{background:var(--danger)}
-.btn.sm{padding:7px 10px;font-size:13px}
-.btn:disabled{opacity:.5}
-.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
-.actions .btn{flex-direction:column;font-size:12px;padding:10px 4px;gap:2px}
-.actions .btn span{font-size:20px}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;padding:12px 14px}
-.kv div:nth-child(odd){color:var(--muted)}
-.big-qty{font-size:30px;font-weight:800;padding:14px 14px 0}
-.big-qty small{font-size:15px;color:var(--muted);font-weight:500}
-.fab{position:fixed;right:18px;bottom:86px;width:56px;height:56px;border-radius:18px;border:0;background:var(--primary);color:#fff;font-size:28px;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;z-index:6}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);z-index:7;padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;border:0;background:none;color:var(--muted);padding:8px 0 10px;font:inherit;font-size:12px;cursor:pointer}
-nav button span{display:block;font-size:21px;line-height:1.3}
-nav button.on{color:var(--primary);font-weight:600}
-.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
-.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px 22px;animation:up .18s ease-out}
-.sheet h2{margin:0 0 4px;font-size:18px}
-.sheet .foot{display:flex;gap:8px;margin-top:16px}.sheet .foot .btn{flex:1}
-@keyframes up{from{transform:translateY(40px);opacity:.4}}@keyframes fade{from{opacity:0}}
-.toast{pointer-events:none;position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:14px;max-width:90vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3)}
-.radio{display:flex;gap:8px}.radio label{flex:1;margin:0;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;border-radius:10px;text-align:center;font-size:14px;cursor:pointer}
-.radio input{display:none}.radio input:checked+span{color:var(--primary);font-weight:700}
-.radio label:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
-.hint{font-size:12px;color:var(--muted);margin-top:4px}
-.crumb{color:var(--muted);font-size:13px}
-.crumb a{color:var(--primary);text-decoration:none;cursor:pointer}
-.switch{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
-.switch input{width:auto;transform:scale(1.3)}
-.pad{padding:12px 14px}
-header .hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.hbtn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer;flex:none}
-.li .ic.chk{background:var(--card);border:2px solid var(--line)}
-.li.sel .ic.chk{background:var(--primary);border-color:var(--primary);color:#fff}
-.selbar{position:fixed;left:0;right:0;bottom:62px;z-index:8;background:var(--text);color:var(--bg);display:flex;align-items:center;gap:8px;padding:10px 14px}
-.selbar b{flex:1}.selbar .btn.sec2{background:transparent;color:var(--bg);border:1px solid var(--muted)}.selbar .btn{padding:8px 12px;font-size:13px}
-.checks label{display:flex;gap:8px;align-items:center;color:var(--text);margin:8px 0;font-size:14px}.checks input{width:auto;transform:scale(1.2)}
+.li .q{flex:none;text-align:right;font-weight:750;font-variant-numeric:tabular-nums}
+.li .q small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.li .chev{color:var(--muted)}
+.tile{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary)}
+.tile.big{width:52px;height:52px;border-radius:16px}.tile.big .i{width:26px;height:26px}
+.t1{background:color-mix(in srgb,var(--s1) 14%,transparent);color:var(--s1)}
+.t2{background:color-mix(in srgb,var(--s2) 14%,transparent);color:var(--s2)}
+.t3{background:color-mix(in srgb,var(--s3) 14%,transparent);color:var(--s3)}
+.t4{background:color-mix(in srgb,var(--s4) 16%,transparent);color:var(--s4)}
+.t5{background:color-mix(in srgb,var(--s5) 16%,transparent);color:var(--s5)}
+.t6{background:color-mix(in srgb,var(--s6) 14%,transparent);color:var(--s6)}
+.t7{background:color-mix(in srgb,var(--s7) 14%,transparent);color:var(--s7)}
+.t8{background:color-mix(in srgb,var(--s8) 14%,transparent);color:var(--s8)}
+.tile.chk{background:var(--card2);border:2px solid var(--line);color:transparent}
+.li.sel .tile.chk{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:650;padding:1px 8px;border-radius:999px;background:var(--card2);color:var(--text2);margin-left:6px;vertical-align:1px}
+.badge.danger{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.badge.warn{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.badge.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.sec{font-size:13px;font-weight:700;color:var(--text2);margin:20px 4px 2px;display:flex;justify-content:space-between;align-items:center}
+.sec a{color:var(--primary);font-weight:600;cursor:pointer;text-decoration:none}
+.empty{text-align:center;color:var(--muted);padding:40px 16px}
+.empty .tile{margin:0 auto 12px}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.crumb a{color:var(--primary);text-decoration:none;cursor:pointer;font-weight:600}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:var(--r-sm);padding:12px 16px;font-weight:650;background:var(--primary);color:var(--on-primary);cursor:pointer;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.soft{background:var(--primary-soft);color:var(--primary)}
+.btn.ghost{background:var(--card);color:var(--text);border:1.5px solid var(--line)}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.text-danger{color:var(--danger)}
+.btn.sm{padding:8px 12px;font-size:13px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.act{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;border-radius:16px;padding:14px 4px 12px;background:var(--card);box-shadow:var(--shadow);font-size:12.5px;font-weight:650;cursor:pointer;color:var(--text)}
+.act .tile{width:38px;height:38px}
+.act:active{transform:scale(.97)}
+.fab{position:fixed;right:18px;bottom:96px;height:56px;min-width:56px;padding:0 18px;border-radius:18px;border:0;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:var(--shadow-lg);cursor:pointer;z-index:6;display:flex;align-items:center;gap:8px;font-weight:700}
+.fab .i{width:24px;height:24px}
+.fab[hidden]{display:none}
+
+/* nav */
+nav{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));display:flex;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 28px rgba(15,23,42,.12);z-index:7;padding:6px;max-width:740px;margin:0 auto}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:6px 0 5px;font-size:11px;font-weight:650;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:16px}
+nav button .pill{display:grid;place-items:center;width:52px;height:30px;border-radius:999px;transition:background .2s}
+nav button.on{color:var(--primary)}
+nav button.on .pill{background:var(--primary-soft)}
+
+/* sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(10,12,20,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom));animation:up .22s cubic-bezier(.2,.8,.2,1)}
+.sheet .handle{width:40px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 12px}
+.sheet h2{margin:0 0 2px;font-size:19px;letter-spacing:-.01em}
+.sheet .foot{display:flex;gap:10px;margin-top:18px;position:sticky;bottom:-22px;background:var(--bg);padding:10px 0 0}.sheet .foot .btn{flex:1}
+@keyframes up{from{transform:translateY(60px);opacity:.4}}@keyframes fade{from{opacity:0}}
+.toast{pointer-events:none;position:fixed;left:50%;bottom:104px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:11px 18px;border-radius:14px;z-index:30;font-size:14px;font-weight:600;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:up .2s}
+.radio{display:flex;gap:8px}
+.radio label{flex:1;margin:0;border:1.5px solid var(--line);background:var(--card);color:var(--text);padding:11px 8px;border-radius:var(--r-sm);text-align:center;font-size:13.5px;font-weight:600;cursor:pointer}
+.radio input{display:none}
+.radio label:has(input:checked){border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.radio label:has(input:disabled){opacity:.45}
+.checks label{display:flex;gap:10px;align-items:center;color:var(--text);margin:10px 0;font-size:14px;font-weight:500}
+.checks input{width:20px;height:20px;accent-color:var(--primary);flex:none}
+.selbar{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:8;background:var(--text);color:var(--bg);display:flex;align-items:center;gap:8px;padding:10px 12px 10px 16px;border-radius:16px;max-width:740px;margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.selbar b{flex:1}.selbar .btn{padding:8px 12px;font-size:13px}
+.selbar .btn.ghost{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 35%,transparent)}
+
+/* item detail */
+.hero{border-radius:22px;padding:18px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:var(--shadow-lg);margin:6px 0 12px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero .lbl{font-size:13px;opacity:.85;font-weight:600}
+.hero .val{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:2px 0 8px;font-variant-numeric:tabular-nums}
+.hero .val small{font-size:16px;font-weight:600;opacity:.85}
+.hero .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;opacity:.92}
+.hero .meta b{font-weight:750}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;padding:14px 16px}
+.kv div:nth-child(odd){color:var(--muted);font-size:13.5px}
+.kv div:nth-child(even){font-weight:550}
+
+/* dashboard */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.stat .n{font-size:24px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.stat .l{font-size:12.5px;color:var(--muted);font-weight:600}
+.stat .top{display:flex;justify-content:space-between;align-items:flex-start}
+.stat .tile{width:34px;height:34px;border-radius:10px}.stat .tile .i{width:18px;height:18px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 4px}
+.quick button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer}
+.quick .tile{width:52px;height:52px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);color:var(--primary)}
+.chart{padding:16px}
+.chart h3{margin:0;font-size:15px;font-weight:700}
+.chart .csub{font-size:12.5px;color:var(--muted);margin:2px 0 12px}
+.chart .chead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.seg{display:flex;background:var(--card2);border-radius:10px;padding:3px;flex:none}
+.seg button{border:0;background:none;font-size:12px;font-weight:650;padding:5px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+.hb{padding:5px 0;cursor:pointer}
+.hb-l{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:4px}
+.hb-l span{color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb-l b{font-variant-numeric:tabular-nums;font-weight:700;flex:none}
+.hb-t{height:10px;background:var(--card2);border-radius:5px;overflow:hidden}
+.hb-b{height:100%;border-radius:0 4px 4px 0;background:var(--s1);min-width:3px}
+.stack{display:flex;gap:2px;height:16px;border-radius:5px;overflow:hidden}
+.stack div{min-width:3px;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12.5px;color:var(--text2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.legend b{color:var(--text);font-variant-numeric:tabular-nums}
+.cols{display:flex;align-items:flex-end;gap:4px;height:120px;border-bottom:1px solid var(--line);padding-top:6px;position:relative}
+.cols .day{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:2px;height:100%;cursor:pointer}
+.cols .bar{width:42%;max-width:9px;border-radius:4px 4px 0 0;min-height:0}
+.cols .grid{position:absolute;left:0;right:0;border-top:1px dashed var(--line);font-size:10.5px;color:var(--muted)}
+.cols .grid span{position:absolute;top:-15px;left:0;background:var(--card);padding-right:4px}
+.xlab{display:flex;gap:4px;font-size:10.5px;color:var(--muted);margin-top:5px}
+.xlab span{flex:1;text-align:center;white-space:nowrap}
+.tip{position:fixed;z-index:40;background:var(--text);color:var(--bg);font-size:12.5px;font-weight:600;padding:7px 10px;border-radius:9px;pointer-events:none;max-width:240px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.onb{text-align:center;padding:28px 18px}
+.onb h2{margin:10px 0 4px;font-size:20px}
+.onb p{color:var(--muted);margin:0 0 16px}
+.onb .btn{width:100%;margin-top:8px}
+details.card summary{list-style:none;cursor:pointer}
+details.card summary::-webkit-details-marker{display:none}
+details[open] .chev{transform:rotate(90deg)}
+.map{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0;background:var(--card)}
+.map .t{font-weight:650}.map select{margin-top:6px}
+.prev{font-size:13px;color:var(--text2);margin:6px 0 0;padding-left:18px}
+code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
 </style>
 </head>
 <body>
 <header id="hdr"></header>
 <main id="app"></main>
-<button class="fab" id="fab" hidden>+</button>
-<nav id="nav">
-  <button data-tab="items"><span>🔎</span>Itens</button>
-  <button data-tab="storages"><span>📦</span>Armazéns</button>
-  <button data-tab="history"><span>🕘</span>Histórico</button>
-  <button data-tab="more"><span>⚙️</span>Backup</button>
-</nav>
+<button class="fab" id="fab" hidden></button>
+<nav id="nav"></nav>
 
 <script>
 "use strict";
@@ -126,7 +242,6 @@ function save(){
 }
 function saveCfg(){ rawWrite(CFG_FILE, JSON.stringify(cfg)); }
 
-/* chamadas assíncronas ao nativo */
 let cbSeq = 0; const cbs = {};
 window.__nativeCb = (id, ok, data) => { const c = cbs[id]; if(!c) return; delete cbs[id]; ok ? c.res(data) : c.rej(new Error(data)); };
 function nativeCall(fn, ...args){ return new Promise((res, rej) => { const id = ++cbSeq; cbs[id] = {res, rej}; N[fn](id, ...args); }); }
@@ -135,15 +250,62 @@ function nativeCall(fn, ...args){ return new Promise((res, rej) => { const id = 
 const $ = s => document.querySelector(s);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const num = v => { let t = String(v ?? "").trim().replace(/[R$\s]/g, ""); if(t.includes(",")) t = t.replace(/\./g, "").replace(",", "."); const n = parseFloat(t); return isFinite(n) ? Math.round(n*1000)/1000 : 0; };
-const fq = n => (Math.round(n*1000)/1000).toLocaleString("pt-BR");
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+const num = v => { if(typeof v==="number") return isFinite(v) ? Math.round(v*1000)/1000 : 0; let t = String(v ?? "").trim().replace(/[R$\s]/g, ""); if(t.includes(",")) t = t.replace(/\./g, "").replace(",", "."); const n = parseFloat(t); return isFinite(n) ? Math.round(n*1000)/1000 : 0; };
+const fq = n => (Math.round((n||0)*1000)/1000).toLocaleString("pt-BR");
 const money = n => (n||0).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
-const itemTotal = i => (i.value||0) * ((i.qty||0) + loanedQty(i.id));
+const moneyShort = n => n>=1e6 ? "R$ "+(n/1e6).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mi" : n>=1e4 ? "R$ "+(n/1e3).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mil" : money(n);
 const fdate = t => new Date(t).toLocaleString("pt-BR", {day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
-function toast(msg){ const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
+const fday = t => new Date(t).toLocaleDateString("pt-BR", {day:"2-digit",month:"2-digit"});
+function toast(msg){ document.querySelectorAll(".toast").forEach(t=>t.remove()); const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
 
-const TYPES = {"Cômodo":"🏠","Armário":"🗄️","Prateleira":"📚","Caixa":"📦","Balde":"🪣","Gaveta":"🗃️","Sacola":"🛍️","Mala":"🧳","Veículo":"🚗","Outro":"📁"};
+/* ícones (traço, estilo Lucide) */
+const IC = {
+  home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="3"/>',
+  box:'<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  more:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  out:'<path d="M12 15V3m0 0L7 8m5-5 5 5"/><path d="M5 21h14"/>',
+  in:'<path d="M12 3v12m0 0-5-5m5 5 5-5"/><path d="M5 21h14"/>',
+  swap:'<path d="M7 7h13l-4-4M17 17H4l4 4"/>',
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  copy:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
+  printer:'<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
+  download:'<path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+  upload:'<path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+  cloud:'<path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  back:'<path d="m15 18-6-6 6-6"/>',
+  chev:'<path d="m9 18 6-6-6-6"/>',
+  alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><path d="M7.5 7.5h.01" stroke-width="3"/>',
+  json:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 12l-2 2.5 2 2.5M14 12l2 2.5-2 2.5"/>',
+  checksq:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/>',
+  layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5M2 17l10 5 10-5"/>',
+  money:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01" stroke-width="3"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  cabinet:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M9.5 11v2M14.5 11v2"/>',
+  shelf:'<path d="M3 4h18M3 12h18M3 20h18M5 4v16M19 4v16"/>',
+  bucket:'<path d="M4 8h16l-2 12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z"/><path d="M7 8a5 5 0 0 1 10 0"/>',
+  drawer:'<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 12h18M10 8h4M10 16h4"/>',
+  bag:'<path d="M5 7h14l1 14H4z"/><path d="M9 7a3 3 0 0 1 6 0"/>',
+  suitcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M3 13h18"/>',
+  car:'<path d="M3 17v-5l2.2-5.2A1 1 0 0 1 6.1 6h11.8a1 1 0 0 1 .9.8L21 12v5z"/><path d="M3 12h18M7 17v2.5M17 17v2.5M7 14.5h.01M17 14.5h.01"/>',
+  folder:'<path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+};
+const icon = (n, cls="") => `<svg class="i ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||IC.folder}</svg>`;
+
+const TYPES = {"Cômodo":{i:"home",c:1},"Armário":{i:"cabinet",c:7},"Prateleira":{i:"shelf",c:3},"Caixa":{i:"box",c:2},"Balde":{i:"bucket",c:4},"Gaveta":{i:"drawer",c:5},"Sacola":{i:"bag",c:6},"Mala":{i:"suitcase",c:8},"Veículo":{i:"car",c:1},"Outro":{i:"folder",c:3}};
+const T = type => TYPES[type] || TYPES.Outro;
+const tile = (type, big) => `<div class="tile t${T(type).c} ${big?"big":""}">${icon(T(type).i)}</div>`;
 const CONDS = ["Novo","Bom","Usado","Desgastado","Danificado","Para conserto"];
 const UNITS = ["un","pç","par","cx","pct","rolo","kg","g","L","mL","m","cm","m²"];
 const condClass = c => ({"Novo":"ok","Bom":"ok","Danificado":"danger","Para conserto":"danger","Desgastado":"warn"}[c] || "");
@@ -152,48 +314,68 @@ const S = id => db.storages.find(s => s.id === id);
 const I = id => db.items.find(i => i.id === id);
 function path(id){ const out=[]; let s=S(id), g=0; while(s && g++<50){ out.unshift(s.name); s=S(s.parentId); } return out.join(" › ") || "—"; }
 function descendants(id){ const ids=[id]; for(let i=0;i<ids.length;i++) db.storages.forEach(s=>{ if(s.parentId===ids[i]) ids.push(s.id); }); return ids; }
+function rootOf(id){ let s=S(id), g=0; while(s && S(s.parentId) && g++<50) s=S(s.parentId); return s; }
 function storageOptions(sel, excludeTree){
   const ex = excludeTree ? descendants(excludeTree) : [];
-  return db.storages.filter(s=>!ex.includes(s.id)).map(s=>({id:s.id,p:path(s.id)})).sort((a,b)=>a.p.localeCompare(b.p))
+  return db.storages.filter(s=>!ex.includes(s.id)).map(s=>({id:s.id,p:path(s.id)})).sort((a,b)=>a.p.localeCompare(b.p,"pt-BR"))
     .map(o=>`<option value="${o.id}" ${o.id===sel?"selected":""}>${esc(o.p)}</option>`).join("");
 }
 const openLoans = itemId => db.loans.filter(l => l.qty - l.returned > 0 && (!itemId || l.itemId === itemId));
 const loanedQty = itemId => openLoans(itemId).reduce((a,l)=>a + l.qty - l.returned, 0);
+const itemTotal = i => (i.value||0) * ((i.qty||0) + loanedQty(i.id));
+const isLow = i => i.minQty>0 && i.qty < i.minQty;
 
 function logMove(type, item, qty, extra={}){
   db.moves.unshift(Object.assign({id:uid(), date:Date.now(), type, itemId:item.id, itemName:item.name, unit:item.unit, qty}, extra));
   if(db.moves.length > 5000) db.moves.length = 5000;
 }
-/* acha item "igual" em outro armazém para mesclar */
 function findTwin(item, storageId){
-  return db.items.find(i => i.id!==item.id && i.storageId===storageId && norm(i.name)===norm(item.name) && i.unit===item.unit && (i.condition||"")===(item.condition||""));
+  return db.items.find(i => i.id!==item.id && i.storageId===storageId && norm(i.name)===norm(item.name) && (i.unit||"")===(item.unit||"") && (i.condition||"")===(item.condition||""));
 }
 
+/* tooltip dos gráficos */
+const tipEl = document.createElement("div"); tipEl.className = "tip";
+function showTip(t){
+  tipEl.textContent = t.dataset.tip; document.body.appendChild(tipEl);
+  const r = t.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  tipEl.style.left = Math.max(8, Math.min(innerWidth-w-8, r.left + r.width/2 - w/2)) + "px";
+  tipEl.style.top = Math.max(8, r.top - h - 8) + "px";
+}
+function hideTip(){ tipEl.remove(); }
+document.addEventListener("pointerover", e => { if(e.pointerType!=="mouse") return; const t = e.target.closest("[data-tip]"); t ? showTip(t) : hideTip(); });
+document.addEventListener("pointerdown", e => { const t = e.target.closest("[data-tip]"); t ? showTip(t) : hideTip(); });
+addEventListener("scroll", hideTip, {passive:true});
+
 /* ====================== Navegação ====================== */
-let tab = "items", stack = [];
-const ui = {q:"", filter:"all", hist:"all", selMode:false, sel:new Set()};
+const TABS = [["home","Início","home"],["items","Itens","list"],["storages","Armazéns","box"],["history","Histórico","clock"],["more","Mais","more"]];
+$("#nav").innerHTML = TABS.map(([k,l,i])=>`<button data-tab="${k}"><span class="pill">${icon(i)}</span>${l}</button>`).join("");
+let tab = "home", stack = [];
+const ui = {q:"", filter:"all", hist:"all", selMode:false, sel:new Set(), chart:"value"};
 function go(view, push=true){ if(push) stack.push(view); render(); window.scrollTo(0,0); }
 function cur(){ return stack[stack.length-1] || {v:tab}; }
 function setTab(t){ tab=t; stack=[]; render(); window.scrollTo(0,0); }
+function openItems(filter, q=""){ ui.filter = filter; ui.q = q; setTab("items"); }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => setTab(b.dataset.tab));
 window.onBack = () => {
   if(document.querySelector(".sheet-bg")){ closeSheet(); return true; }
   if(ui.selMode && tab==="items" && !stack.length){ selExit(); return true; }
   if(stack.length){ stack.pop(); render(); return true; }
-  if(tab!=="items"){ setTab("items"); return true; }
+  if(tab!=="home"){ setTab("home"); return true; }
   return false;
 };
 
 function header(title, sub, back, actions=""){
-  $("#hdr").innerHTML = `<div class="hrow"><h1>${back?`<button class="back" onclick="onBack()">‹</button>`:""}${title}</h1>${actions}</div>${sub?`<div class="sub">${sub}</div>`:""}`;
+  $("#hdr").innerHTML = `<div class="hrow">${back?`<button class="iconbtn ghost" onclick="onBack()" aria-label="Voltar">${icon("back","lg")}</button>`:""}<h1>${title}</h1>${actions}</div>${sub?`<div class="sub">${sub}</div>`:""}`;
 }
-function fab(fn){ const f=$("#fab"); f.hidden=!fn; f.onclick=fn||null; }
+const hbtn = (ic, fn, label) => `<button class="iconbtn" onclick="${fn}" aria-label="${label}" title="${label}">${icon(ic)}</button>`;
+function fab(fn, label=""){ const f=$("#fab"); f.hidden=!fn; f.onclick=fn||null; f.innerHTML = icon("plus") + (label?`<span>${label}</span>`:""); }
 
 function render(){
+  hideTip();
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
   const c = cur();
-  const views = {items:vItems, storages:vStorages, history:vHistory, more:vMore, storage:vStorage, item:vItem};
-  (views[c.v] || vItems)(c);
+  const views = {home:vHome, items:vItems, storages:vStorages, history:vHistory, more:vMore, storage:vStorage, item:vItem};
+  (views[c.v] || vHome)(c);
   selBar();
 }
 function selBar(){
@@ -202,9 +384,9 @@ function selBar(){
   if(!show){ if(b) b.remove(); return; }
   if(!b){ b = document.createElement("div"); b.id="selbar"; b.className="selbar"; document.body.appendChild(b); }
   b.innerHTML = `<b>${ui.sel.size} selecionado(s)</b>
-    <button class="btn sec2" onclick="selAll()">Todos</button>
-    <button class="btn" onclick="printForm({scope:'sel'})" ${ui.sel.size?"":"disabled"}>🖨️ PDF</button>
-    <button class="btn ghost" onclick="selExit()">✕</button>`;
+    <button class="btn ghost" onclick="selAll()">Todos</button>
+    <button class="btn" onclick="printForm({scope:'sel'})" ${ui.sel.size?"":"disabled"}>${icon("printer","sm")} PDF</button>
+    <button class="btn ghost" onclick="selExit()" aria-label="Sair">${icon("x","sm")}</button>`;
 }
 function rowTap(id){
   if(ui.selMode && tab==="items" && !stack.length){ ui.sel.has(id) ? ui.sel.delete(id) : ui.sel.add(id); listItems(); selBar(); }
@@ -214,34 +396,161 @@ function selStart(){ ui.selMode = true; render(); }
 function selExit(){ ui.selMode = false; ui.sel.clear(); render(); }
 function selAll(){ const l = filteredItems(); const all = l.every(i=>ui.sel.has(i.id)); l.forEach(i=> all ? ui.sel.delete(i.id) : ui.sel.add(i.id)); listItems(); selBar(); }
 
-/* ====================== Telas ====================== */
+/* ====================== Linhas ====================== */
 function itemRow(i, showPath=true){
-  const lq = loanedQty(i.id), low = i.minQty>0 && i.qty < i.minQty;
+  const lq = loanedQty(i.id), low = isLow(i);
   const st = S(i.storageId);
   const sm = ui.selMode && tab==="items" && !stack.length, on = sm && ui.sel.has(i.id);
   return `<div class="li ${on?"sel":""}" onclick="rowTap('${i.id}')">
-    <div class="ic ${sm?"chk":""}">${sm?(on?"✓":""):st?TYPES[st.type]||"📁":"❔"}</div>
+    ${sm?`<div class="tile chk">${icon("check")}</div>`:tile(st&&st.type)}
     <div class="main"><div class="t">${esc(i.name)}${i.condition?`<span class="badge ${condClass(i.condition)}">${esc(i.condition)}</span>`:""}</div>
     <div class="s">${showPath?esc(path(i.storageId)):esc(i.category||i.notes||"")}${i.value?" · "+money(i.value):""}</div></div>
-    <div class="q" style="${low||i.qty===0?"color:var(--danger)":""}">${fq(i.qty)} ${esc(i.unit)}${lq?`<small>+${fq(lq)} fora</small>`:low?`<small>mín ${fq(i.minQty)}</small>`:""}</div></div>`;
+    <div class="q" style="${low||i.qty===0?"color:var(--danger)":""}">${fq(i.qty)} <span style="font-weight:600">${esc(i.unit)}</span>${lq?`<small>+${fq(lq)} fora</small>`:low?`<small>mín ${fq(i.minQty)}</small>`:""}</div></div>`;
 }
 function storageRow(s){
   const ids = descendants(s.id);
-  const n = db.items.filter(i=>ids.includes(i.storageId)).length;
+  const its = db.items.filter(i=>ids.includes(i.storageId));
+  const val = its.reduce((a,i)=>a+itemTotal(i),0);
   const subs = db.storages.filter(x=>x.parentId===s.id).length;
   return `<div class="li" onclick="go({v:'storage',id:'${s.id}'})">
-    <div class="ic">${TYPES[s.type]||"📁"}</div>
+    ${tile(s.type)}
     <div class="main"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.type)}${s.location?" · "+esc(s.location):""}${subs?` · ${subs} dentro`:""}</div></div>
-    <div class="q">${n}<small>itens</small></div></div>`;
+    <div class="q">${its.length}<small>${val?moneyShort(val):"itens"}</small></div></div>`;
+}
+function loanRow(l){
+  const rem = l.qty - l.returned;
+  const days = Math.floor((Date.now()-l.date)/864e5);
+  return `<div class="li" onclick="returnForm('${l.id}')"><div class="tile t2">${icon("user")}</div>
+    <div class="main"><div class="t">${esc(l.itemName)}</div><div class="s">${l.who?esc(l.who)+" · ":""}${days?`há ${days} dia${days>1?"s":""}`:"hoje"}${l.note?" · "+esc(l.note):""}</div></div>
+    <div class="q">${fq(rem)} ${esc(l.unit)}<small style="color:var(--primary);font-weight:650">Devolver</small></div></div>`;
+}
+const MV = {criado:["plus","Cadastro",3],entrada:["in","Entrada",3],retirada:["out","Baixa",8],emprestimo:["user","Retirada (volta)",2],devolucao:["undo","Devolução",1],transferencia:["swap","Transferência",7],ajuste:["edit","Ajuste",4],exclusao:["trash","Exclusão",8],importacao:["json","Importação",1]};
+function moveRow(m, showName=true){
+  const [ic, label, c] = MV[m.type] || ["info", m.type, 3];
+  const sign = ["entrada","devolucao","criado","importacao"].includes(m.type) ? "+" : ["retirada","emprestimo","exclusao"].includes(m.type) ? "−" : "";
+  const where = m.type==="transferencia" ? `${esc(m.from)} → ${esc(m.to)}` : esc(m.where||"");
+  return `<div class="li" ${I(m.itemId)?`onclick="go({v:'item',id:'${m.itemId}'})"`:""}><div class="tile t${c}">${icon(ic)}</div>
+    <div class="main"><div class="t">${showName?esc(m.itemName):label}</div>
+    <div class="s">${showName?label+" · ":""}${fdate(m.date)}${m.who?" · "+esc(m.who):""}${where?" · "+where:""}${m.note?" · "+esc(m.note):""}</div></div>
+    <div class="q">${sign}${fq(m.qty)} <small>${esc(m.unit)}</small></div></div>`;
+}
+
+/* ====================== Gráficos (HTML/CSS) ====================== */
+function hbars(rows, fmt, slot=1){
+  const max = Math.max(...rows.map(r=>r.v), 0) || 1;
+  return rows.map(r=>`<div class="hb" ${r.on?`onclick="${r.on}"`:""} data-tip="${esc(r.label)}: ${esc(fmt(r.v))}${r.extra?" · "+esc(r.extra):""}">
+    <div class="hb-l"><span>${esc(r.label)}</span><b>${esc(fmt(r.v))}</b></div>
+    <div class="hb-t"><div class="hb-b" style="width:${Math.max(1.5, r.v/max*100)}%;background:var(--s${slot})"></div></div></div>`).join("");
+}
+function topN(map, n){
+  const arr = Object.entries(map).map(([label,v])=>({label, v})).filter(r=>r.v>0).sort((a,b)=>b.v-a.v);
+  if(arr.length<=n) return arr;
+  const rest = arr.slice(n-1).reduce((a,r)=>a+r.v,0);
+  return [...arr.slice(0,n-1), {label:"Outros", v:rest}];
+}
+
+/* ====================== Telas ====================== */
+function vHome(){
+  const nItems = db.items.length, total = db.items.reduce((a,i)=>a+itemTotal(i),0);
+  const units = db.items.reduce((a,i)=>a+(i.qty||0),0);
+  const loans = openLoans(), low = db.items.filter(isLow), zero = db.items.filter(i=>i.qty===0);
+  const h = new Date().getHours();
+  header(h<12?"Bom dia":h<18?"Boa tarde":"Boa noite", new Date().toLocaleDateString("pt-BR",{weekday:"long", day:"numeric", month:"long"}), false,
+    hbtn("search", "setTab('items')", "Buscar"));
+  if(!db.storages.length){
+    $("#app").innerHTML = `<div class="card onb">
+      <div class="tile big t1" style="margin:0 auto">${icon("box")}</div>
+      <h2>Bem-vindo ao Inventário</h2>
+      <p>Organize suas coisas em armazéns (cômodos, armários, caixas, baldes…) e saiba sempre o que tem e onde está.</p>
+      <button class="btn" onclick="storageForm()">${icon("plus","sm")} Criar primeiro armazém</button>
+      <button class="btn soft" onclick="importAny()">${icon("upload","sm")} Importar JSON</button>
+      <button class="btn ghost" onclick="downloadSample()">${icon("download","sm")} Baixar JSON de exemplo</button>
+    </div>`;
+    fab(null); return;
+  }
+  // gráficos
+  const byCat = {}, byCatN = {};
+  db.items.forEach(i=>{ const k = i.category || "Sem categoria"; byCat[k] = (byCat[k]||0) + itemTotal(i); byCatN[k] = (byCatN[k]||0) + 1; });
+  const catRows = topN(ui.chart==="value" ? byCat : byCatN, 6).map(r=>({...r, on: r.label!=="Outros" ? `openItems('all', ${esc(JSON.stringify(r.label==="Sem categoria"?"":r.label))})` : ""}));
+  const byRoot = {}, rootVal = {};
+  db.items.forEach(i=>{ const r = rootOf(i.storageId); if(!r) return; byRoot[r.id] = (byRoot[r.id]||0)+1; rootVal[r.id] = (rootVal[r.id]||0)+itemTotal(i); });
+  const stRows = Object.entries(byRoot).map(([id,v])=>({label:S(id).name, v, extra:rootVal[id]?money(rootVal[id]):"", on:`go({v:'storage',id:'${id}'})`})).sort((a,b)=>b.v-a.v).slice(0,6);
+  const condKeys = [...CONDS, ""];
+  const condCount = condKeys.map(k=>db.items.filter(i=>(i.condition||"")===k).length);
+  // atividade 14 dias
+  const days = 14, d0 = new Date(); d0.setHours(0,0,0,0); const start = d0.getTime() - (days-1)*864e5;
+  const act = Array.from({length:days}, (_,k)=>({t:start+k*864e5, inn:0, out:0}));
+  db.moves.forEach(m=>{ if(m.date<start) return; const k = Math.floor((m.date-start)/864e5); if(!act[k]) return;
+    if(["criado","entrada","devolucao","importacao"].includes(m.type)) act[k].inn++; else if(["retirada","emprestimo","exclusao"].includes(m.type)) act[k].out++; });
+  const amax = Math.max(1, ...act.map(a=>Math.max(a.inn,a.out)));
+  const recent = db.items.slice().sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).slice(0,5);
+
+  $("#app").innerHTML = `
+    <div class="hero">
+      <div class="lbl">Valor total do inventário</div>
+      <div class="val">${money(total)}</div>
+      <div class="meta"><span><b>${nItems}</b> itens</span><span><b>${fq(units)}</b> unidades</span><span><b>${db.storages.length}</b> armazéns</span></div>
+    </div>
+    <div class="quick">
+      <button onclick="itemForm()"><div class="tile">${icon("plus")}</div>Item</button>
+      <button onclick="storageForm()"><div class="tile">${icon("box")}</div>Armazém</button>
+      <button onclick="importAny()"><div class="tile">${icon("upload")}</div>Importar</button>
+      <button onclick="printForm({scope:'all'})"><div class="tile">${icon("printer")}</div>PDF</button>
+    </div>
+    <div class="stats" style="margin-top:12px">
+      <div class="stat" onclick="openItems('out')"><div class="top"><div class="n">${loans.length}</div><div class="tile t2">${icon("user")}</div></div><div class="l">A devolver</div></div>
+      <div class="stat" onclick="openItems('low')"><div class="top"><div class="n" style="${low.length?"color:var(--danger)":""}">${low.length}</div><div class="tile t8">${icon("alert")}</div></div><div class="l">Estoque baixo</div></div>
+      <div class="stat" onclick="openItems('zero')"><div class="top"><div class="n">${zero.length}</div><div class="tile t4">${icon("box")}</div></div><div class="l">Zerados</div></div>
+      <div class="stat" onclick="setTab('history')"><div class="top"><div class="n">${act.reduce((a,x)=>a+x.inn+x.out,0)}</div><div class="tile t3">${icon("trend")}</div></div><div class="l">Movimentações (14 dias)</div></div>
+    </div>
+
+    ${nItems?`<div class="card chart">
+      <div class="chead"><div><h3>Por categoria</h3><div class="csub">${ui.chart==="value"?"Valor total em cada categoria":"Quantidade de itens cadastrados"}</div></div>
+      <div class="seg"><button class="${ui.chart==="value"?"on":""}" onclick="ui.chart='value';vHome()">Valor</button><button class="${ui.chart==="count"?"on":""}" onclick="ui.chart='count';vHome()">Itens</button></div></div>
+      ${catRows.length?hbars(catRows, ui.chart==="value"?moneyShort:(v=>v+" "+(v>1?"itens":"item")), 1):`<p class="hint">Informe o valor dos itens para ver este gráfico.</p>`}
+    </div>
+
+    <div class="card chart">
+      <h3>Itens por armazém</h3><div class="csub">Armazéns principais (inclui o que está dentro)</div>
+      ${hbars(stRows, v=>v+" "+(v>1?"itens":"item"), 7)}
+    </div>
+
+    <div class="card chart">
+      <h3>Estado dos itens</h3><div class="csub">${nItems} itens cadastrados</div>
+      <div class="stack">${condKeys.map((k,x)=>condCount[x]?`<div style="flex:${condCount[x]};background:var(--s${x+1})" data-tip="${esc(k||"Sem estado")}: ${condCount[x]} (${Math.round(condCount[x]/nItems*100)}%)" onclick="openItems('${k?"c:"+k:"all"}')"></div>`:"").join("")}</div>
+      <div class="legend">${condKeys.map((k,x)=>condCount[x]?`<span><i style="background:var(--s${x+1})"></i>${esc(k||"Sem estado")} <b>${condCount[x]}</b></span>`:"").join("")}</div>
+    </div>
+
+    <div class="card chart">
+      <h3>Atividade</h3><div class="csub">Entradas e saídas nos últimos 14 dias</div>
+      <div class="cols"><div class="grid" style="top:6px"><span>${amax}</span></div>
+        ${act.map(a=>`<div class="day" data-tip="${fday(a.t)}: ${a.inn} entrada${a.inn!==1?"s":""}, ${a.out} saída${a.out!==1?"s":""}">
+          <div class="bar" style="height:${a.inn/amax*100}%;background:var(--s1)"></div><div class="bar" style="height:${a.out/amax*100}%;background:var(--s2)"></div></div>`).join("")}
+      </div>
+      <div class="xlab">${act.map((a,k)=>`<span>${(days-1-k)%3===0?fday(a.t):""}</span>`).join("")}</div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Entradas <b>${act.reduce((s,a)=>s+a.inn,0)}</b></span><span><i style="background:var(--s2)"></i>Saídas <b>${act.reduce((s,a)=>s+a.out,0)}</b></span></div>
+    </div>`:""}
+
+    ${loans.length?`<div class="sec">A devolver <a onclick="setTab('history')">Ver tudo</a></div><div class="card">${loans.slice(0,4).map(loanRow).join("")}</div>`:""}
+    ${low.length?`<div class="sec">Estoque baixo <a onclick="openItems('low')">Ver tudo</a></div><div class="card">${low.slice(0,4).map(i=>itemRow(i)).join("")}</div>`:""}
+    ${recent.length?`<div class="sec">Atualizados recentemente</div><div class="card">${recent.map(i=>itemRow(i)).join("")}</div>`:""}
+    ${backupNag()}`;
+  fab(() => itemForm(), "Item");
+}
+function backupNag(){
+  const last = cfg.lastBackup || cfg.lastExport || 0;
+  if(!db.items.length || (Date.now()-last) < 7*864e5) return "";
+  return `<div class="card pad" style="display:flex;gap:12px;align-items:center;cursor:pointer" onclick="setTab('more')">
+    <div class="tile t4">${icon("cloud")}</div><div style="flex:1"><b>Faça um backup</b><div class="hint" style="margin:0">${last?"Último backup há "+Math.floor((Date.now()-last)/864e5)+" dias":"Você ainda não fez backup"}. Seus dados ficam só neste aparelho.</div></div>${icon("chev")}</div>`;
 }
 
 function vItems(){
   const tot = db.items.reduce((a,i)=>a+itemTotal(i),0);
-  header("Inventário", `${db.items.length} itens · ${db.storages.length} armazéns${openLoans().length?` · ${openLoans().length} fora`:""}${tot?` · ${money(tot)}`:""}`, false,
-    `<div class="row" style="flex:none">${ui.selMode?"":`<button class="hbtn" onclick="selStart()">☑️ Selecionar</button>`}<button class="hbtn" onclick="printForm({scope:ui.q||ui.filter!=='all'?'search':'all'})">🖨️</button></div>`);
+  header("Itens", `${db.items.length} itens${tot?` · ${money(tot)}`:""}`, false,
+    `${ui.selMode?"":hbtn("checksq","selStart()","Selecionar")}${hbtn("printer", "printForm({scope:ui.q||ui.filter!=='all'?'search':'all'})", "Imprimir")}`);
   const app = $("#app");
   if(!app.querySelector("#q")){
-    app.innerHTML = `<div class="search"><input id="q" type="search" placeholder="Buscar item, categoria, local, obs…" autocomplete="off"></div>
+    app.innerHTML = `<div class="searchbox">${icon("search")}<input id="q" type="search" placeholder="Buscar item, categoria, local, pessoa…" autocomplete="off"></div>
       <div class="chips" id="chips"></div><div id="list"></div>`;
     const q = $("#q"); q.value = ui.q;
     q.oninput = () => { ui.q = q.value; listItems(); };
@@ -256,7 +565,7 @@ function filteredItems(){
   return db.items.filter(i => {
     const f = ui.filter;
     if(f==="out" && !loanedQty(i.id)) return false;
-    if(f==="low" && !(i.minQty>0 && i.qty<i.minQty)) return false;
+    if(f==="low" && !isLow(i)) return false;
     if(f==="zero" && i.qty!==0) return false;
     if(f.startsWith("c:") && i.condition!==f.slice(2)) return false;
     if(!terms.length) return true;
@@ -268,135 +577,137 @@ function listItems(){
   const list = filteredItems();
   const el = $("#list");
   if(!db.storages.length){
-    el.innerHTML = `<div class="empty"><div class="big">📦</div><p>Comece criando um <b>armazém</b><br>(caixa, balde, cômodo, armário…)</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`; return;
+    el.innerHTML = `<div class="empty"><div class="tile big t1">${icon("box")}</div><p>Comece criando um <b>armazém</b><br>(caixa, balde, cômodo, armário…)</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`; return;
   }
-  if(!list.length){ el.innerHTML = `<div class="empty"><div class="big">🔎</div><p>${db.items.length?"Nada encontrado.":"Nenhum item ainda. Toque em + para adicionar."}</p></div>`; return; }
+  if(!list.length){ el.innerHTML = `<div class="empty"><div class="tile big">${icon("search")}</div><p>${db.items.length?"Nada encontrado.":"Nenhum item ainda. Toque em + para adicionar."}</p></div>`; return; }
   el.innerHTML = `<div class="card">${list.slice(0,500).map(i=>itemRow(i)).join("")}</div>${list.length>500?`<p class="hint">Mostrando 500 de ${list.length}. Refine a busca.</p>`:""}`;
 }
 
 function vStorages(){
-  header("Armazéns", "Caixas, baldes, cômodos, armários…");
+  header("Armazéns", `${db.storages.length} cadastrados`);
   const roots = db.storages.filter(s=>!s.parentId || !S(s.parentId)).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
-  $("#app").innerHTML = roots.length ? `<div class="card">${roots.map(storageRow).join("")}</div>`
-    : `<div class="empty"><div class="big">📦</div><p>Nenhum armazém ainda.</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`;
-  fab(() => storageForm());
+  $("#app").innerHTML = roots.length ? `<div class="card">${roots.map(storageRow).join("")}</div><p class="hint" style="text-align:center">Toque em um armazém para ver o que tem dentro.</p>`
+    : `<div class="empty"><div class="tile big t1">${icon("box")}</div><p>Nenhum armazém ainda.</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`;
+  fab(() => storageForm(), "Armazém");
 }
 
 function vStorage({id}){
   const s = S(id); if(!s){ stack.pop(); return render(); }
   const parent = S(s.parentId);
-  header(`${TYPES[s.type]||"📁"} ${esc(s.name)}`, `<span class="crumb">${parent?`em <a onclick="go({v:'storage',id:'${parent.id}'})">${esc(path(parent.id))}</a> · `:""}${esc(s.type)}${s.location?" · "+esc(s.location):""}</span>`, true);
+  header(esc(s.name), "", true, hbtn("printer", `printForm({scope:'storage',storageId:'${id}'})`, "Imprimir") + hbtn("edit", `storageForm('${id}')`, "Editar"));
   const subs = db.storages.filter(x=>x.parentId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
   const items = db.items.filter(i=>i.storageId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
-  const all = descendants(id), tot = db.items.filter(i=>all.includes(i.storageId)).reduce((a,i)=>a+itemTotal(i),0);
+  const all = descendants(id), allItems = db.items.filter(i=>all.includes(i.storageId)), tot = allItems.reduce((a,i)=>a+itemTotal(i),0);
   $("#app").innerHTML = `
-    ${tot?`<div class="hint" style="margin:0 2px 4px">Valor total (incl. sub-armazéns): <b>${money(tot)}</b></div>`:""}
-    ${s.notes?`<div class="card pad">${esc(s.notes)}</div>`:""}
-    <div class="row" style="margin:8px 0">
-      <button class="btn sec2 sm" onclick="itemForm(null,'${id}')">＋ Item</button>
-      <button class="btn sec2 sm" onclick="storageForm(null,'${id}')">＋ Armazém dentro</button>
-      <button class="btn ghost sm" onclick="storageForm('${id}')">✏️</button>
-      <button class="btn ghost sm" onclick="printForm({scope:'storage',storageId:'${id}'})">🖨️</button>
+    <div class="card pad" style="display:flex;gap:14px;align-items:center">
+      ${tile(s.type, true)}
+      <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(s.type)}${s.location?` · <span style="color:var(--text2);font-weight:500">${esc(s.location)}</span>`:""}</div>
+      <div class="hint crumb" style="margin:2px 0 0">${parent?`dentro de <a onclick="go({v:'storage',id:'${parent.id}'})">${esc(path(parent.id))}</a>`:"Armazém principal"}</div></div>
     </div>
-    ${subs.length?`<div class="sec">Dentro deste</div><div class="card">${subs.map(storageRow).join("")}</div>`:""}
+    <div class="stats">
+      <div class="stat" style="cursor:default"><div class="n">${allItems.length}</div><div class="l">itens${subs.length?" (com sub-armazéns)":""}</div></div>
+      <div class="stat" style="cursor:default"><div class="n" style="font-size:20px">${money(tot)}</div><div class="l">valor total</div></div>
+    </div>
+    ${s.notes?`<div class="card pad" style="white-space:pre-wrap">${esc(s.notes)}</div>`:""}
+    <div class="row" style="margin:12px 0 0">
+      <button class="btn soft sm" onclick="itemForm(null,'${id}')">${icon("plus","sm")} Item aqui</button>
+      <button class="btn soft sm" onclick="storageForm(null,'${id}')">${icon("box","sm")} Armazém dentro</button>
+    </div>
+    ${subs.length?`<div class="sec">Dentro deste (${subs.length})</div><div class="card">${subs.map(storageRow).join("")}</div>`:""}
     <div class="sec">Itens (${items.length})</div>
-    ${items.length?`<div class="card">${items.map(i=>itemRow(i,false)).join("")}</div>`:`<div class="empty">Vazio</div>`}
-    <div style="margin-top:20px"><button class="btn ghost sm" style="color:var(--danger)" onclick="deleteStorage('${id}')">🗑️ Excluir armazém</button></div>`;
-  fab(() => itemForm(null, id));
+    ${items.length?`<div class="card">${items.map(i=>itemRow(i,false)).join("")}</div>`:`<div class="card empty" style="padding:24px">Nenhum item aqui</div>`}
+    <div style="margin-top:24px;text-align:center"><button class="btn ghost sm text-danger" onclick="deleteStorage('${id}')">${icon("trash","sm")} Excluir armazém</button></div>`;
+  fab(() => itemForm(null, id), "Item");
 }
 
 function vItem({id}){
   const i = I(id); if(!i){ stack.pop(); return render(); }
-  header(esc(i.name), `<span class="crumb">em <a onclick="go({v:'storage',id:'${i.storageId}'})">${esc(path(i.storageId))}</a></span>`, true);
-  const loans = openLoans(id), moves = db.moves.filter(m=>m.itemId===id).slice(0,30);
+  const st = S(i.storageId);
+  header(esc(i.name), "", true, hbtn("edit", `itemForm('${id}')`, "Editar"));
+  const loans = openLoans(id), moves = db.moves.filter(m=>m.itemId===id).slice(0,30), lq = loanedQty(id);
   $("#app").innerHTML = `
-    <div class="card">
-      <div class="big-qty">${fq(i.qty)} <small>${esc(i.unit)}${loans.length?` · +${fq(loanedQty(id))} emprestado`:""}</small></div>
-      <div class="kv">
-        <div>Estado</div><div>${i.condition?`<span class="badge ${condClass(i.condition)}" style="margin:0">${esc(i.condition)}</span>`:"—"}</div>
-        <div>Categoria</div><div>${esc(i.category||"—")}</div>
-        ${i.value?`<div>Valor unit.</div><div>${money(i.value)}</div><div>Valor total</div><div><b>${money(itemTotal(i))}</b></div>`:""}
-        ${i.minQty?`<div>Qtd. mínima</div><div>${fq(i.minQty)} ${esc(i.unit)}</div>`:""}
-        <div>Observação</div><div style="white-space:pre-wrap">${esc(i.notes||"—")}</div>
-        <div>Atualizado</div><div>${fdate(i.updatedAt||i.createdAt)}</div>
-      </div>
+    <div class="hero">
+      <div class="lbl">Disponível</div>
+      <div class="val">${fq(i.qty)} <small>${esc(i.unit)}</small></div>
+      <div class="meta">${lq?`<span><b>+${fq(lq)}</b> emprestado</span>`:""}${i.value?`<span>Total <b>${money(itemTotal(i))}</b></span>`:""}${isLow(i)?`<span>⚠ abaixo do mínimo (${fq(i.minQty)})</span>`:""}</div>
     </div>
     <div class="actions">
-      <button class="btn" onclick="withdrawForm('${id}')"><span>📤</span>Retirar</button>
-      <button class="btn" onclick="addQtyForm('${id}')"><span>📥</span>Adicionar</button>
-      <button class="btn" onclick="transferForm('${id}')"><span>🔀</span>Transferir</button>
-      <button class="btn sec2" onclick="itemForm('${id}')"><span>✏️</span>Editar</button>
-      <button class="btn sec2" onclick="itemForm(null,'${i.storageId}','${id}')"><span>📄</span>Duplicar</button>
-      <button class="btn sec2" style="color:var(--danger)" onclick="deleteItem('${id}')"><span>🗑️</span>Excluir</button>
+      <button class="act" onclick="withdrawForm('${id}')"><div class="tile t2">${icon("out")}</div>Retirar</button>
+      <button class="act" onclick="addQtyForm('${id}')"><div class="tile t3">${icon("in")}</div>Adicionar</button>
+      <button class="act" onclick="transferForm('${id}')"><div class="tile t7">${icon("swap")}</div>Transferir</button>
     </div>
+    <div class="card">
+      <div class="li" onclick="go({v:'storage',id:'${i.storageId}'})">${tile(st&&st.type)}<div class="main"><div class="s">Armazém</div><div class="t">${esc(path(i.storageId))}</div></div><span class="chev">${icon("chev")}</span></div>
+    </div>
+    <div class="card"><div class="kv">
+      <div>Estado</div><div>${i.condition?`<span class="badge ${condClass(i.condition)}" style="margin:0">${esc(i.condition)}</span>`:"—"}</div>
+      <div>Categoria</div><div>${esc(i.category||"—")}</div>
+      <div>Valor unitário</div><div>${i.value?money(i.value):"—"}</div>
+      ${i.minQty?`<div>Qtd. mínima</div><div>${fq(i.minQty)} ${esc(i.unit)}</div>`:""}
+      <div>Observação</div><div style="white-space:pre-wrap">${esc(i.notes||"—")}</div>
+      <div>Atualizado</div><div>${fdate(i.updatedAt||i.createdAt)}</div>
+    </div></div>
     ${loans.length?`<div class="sec">Fora / a devolver</div><div class="card">${loans.map(loanRow).join("")}</div>`:""}
     <div class="sec">Movimentações</div>
-    ${moves.length?`<div class="card">${moves.map(m=>moveRow(m,false)).join("")}</div>`:`<div class="empty">Sem movimentações</div>`}`;
+    ${moves.length?`<div class="card">${moves.map(m=>moveRow(m,false)).join("")}</div>`:`<div class="card empty" style="padding:24px">Sem movimentações</div>`}
+    <div class="row" style="margin-top:20px">
+      <button class="btn ghost sm" onclick="itemForm(null,'${i.storageId}','${id}')">${icon("copy","sm")} Duplicar</button>
+      <button class="btn ghost sm text-danger" onclick="deleteItem('${id}')">${icon("trash","sm")} Excluir</button>
+    </div>`;
   fab(null);
 }
 
-function loanRow(l){
-  const rem = l.qty - l.returned;
-  return `<div class="li" onclick="returnForm('${l.id}')"><div class="ic">🤝</div>
-    <div class="main"><div class="t">${esc(l.itemName)}${l.who?` · ${esc(l.who)}`:""}</div><div class="s">${fdate(l.date)}${l.note?" · "+esc(l.note):""}</div></div>
-    <div class="q">${fq(rem)} ${esc(l.unit)}<small style="color:var(--primary)">Devolver ›</small></div></div>`;
-}
-const MV = {criado:["🆕","Cadastro"],entrada:["📥","Entrada"],retirada:["📤","Retirada"],emprestimo:["🤝","Empréstimo"],devolucao:["↩️","Devolução"],transferencia:["🔀","Transferência"],ajuste:["✏️","Ajuste"],exclusao:["🗑️","Exclusão"]};
-function moveRow(m, showName=true){
-  const [ic, label] = MV[m.type] || ["•", m.type];
-  const sign = ["entrada","devolucao","criado"].includes(m.type) ? "+" : ["retirada","emprestimo","exclusao"].includes(m.type) ? "−" : "";
-  const where = m.type==="transferencia" ? `${esc(m.from)} → ${esc(m.to)}` : esc(m.where||"");
-  return `<div class="li" ${I(m.itemId)?`onclick="go({v:'item',id:'${m.itemId}'})"`:""}><div class="ic">${ic}</div>
-    <div class="main"><div class="t">${showName?esc(m.itemName)+" · ":""}${label}</div>
-    <div class="s">${fdate(m.date)}${m.who?" · "+esc(m.who):""}${where?" · "+where:""}${m.note?" · "+esc(m.note):""}</div></div>
-    <div class="q">${sign}${fq(m.qty)} <small>${esc(m.unit)}</small></div></div>`;
-}
-
 function vHistory(){
-  header("Histórico", "Retiradas, devoluções, transferências…");
+  header("Histórico", "Retiradas, devoluções e movimentações");
   const loans = openLoans();
   const types = [["all","Tudo"],["out","Saídas"],["devolucao","Devoluções"],["transferencia","Transferências"],["entrada","Entradas"],["ajuste","Ajustes"]];
-  const list = db.moves.filter(m => ui.hist==="all" || (ui.hist==="out" ? ["retirada","emprestimo"].includes(m.type) : m.type===ui.hist)).slice(0,300);
+  const list = db.moves.filter(m => ui.hist==="all" || (ui.hist==="out" ? ["retirada","emprestimo"].includes(m.type) : ui.hist==="entrada" ? ["entrada","criado","importacao"].includes(m.type) : m.type===ui.hist)).slice(0,300);
   $("#app").innerHTML = `
     ${loans.length?`<div class="sec">A devolver (${loans.length})</div><div class="card">${loans.map(loanRow).join("")}</div>`:""}
     <div class="sec">Movimentações</div>
     <div class="chips">${types.map(([k,l])=>`<button class="chip ${ui.hist===k?"on":""}" onclick="ui.hist='${k}';vHistory()">${l}</button>`).join("")}</div>
-    ${list.length?`<div class="card">${list.map(m=>moveRow(m)).join("")}</div>`:`<div class="empty">Nada por aqui</div>`}`;
+    ${list.length?`<div class="card">${list.map(m=>moveRow(m)).join("")}</div>`:`<div class="empty"><div class="tile big">${icon("clock")}</div>Nada por aqui</div>`}`;
   fab(null);
 }
 
+function menuRow(ic, c, title, sub, fn){
+  return `<div class="li" onclick="${fn}"><div class="tile t${c}">${icon(ic)}</div><div class="main"><div class="t">${title}</div><div class="s">${sub}</div></div><span class="chev">${icon("chev")}</span></div>`;
+}
 function vMore(){
-  header("Backup e configurações", "Seus dados ficam só no aparelho. Faça backup!");
+  header("Mais", "Importar, exportar, backup e PDF");
   const s3 = cfg.s3, has = s3.bucket && s3.accessKey && s3.secretKey;
   $("#app").innerHTML = `
-    <div class="sec">Arquivo</div>
-    <div class="card pad">
-      <div class="row"><button class="btn" onclick="exportJSON()">⬇️ Exportar backup</button><button class="btn ghost" onclick="importJSON()">⬆️ Importar</button></div>
-      <div class="row" style="margin-top:8px"><button class="btn sec2" onclick="printForm({scope:'all'})">🖨️ Imprimir / salvar PDF</button></div>
-      <p class="hint">O backup (.json) contém tudo: armazéns, itens, empréstimos e histórico. Você pode salvar direto no Google Drive pelo seletor de arquivos.</p>
+    <div class="sec">Dados</div>
+    <div class="card">
+      ${menuRow("download",1,"Exportar backup completo","Arquivo .json com tudo (armazéns, itens, histórico)","exportJSON()")}
+      ${menuRow("upload",3,"Importar JSON","Produtos novos ou restaurar um backup completo","importAny()")}
+      ${menuRow("json",7,"Baixar JSON de exemplo","Modelo para cadastrar produtos em lote","downloadSample()")}
+      ${menuRow("printer",2,"Imprimir / salvar PDF","Todos, por armazém, selecionados ou busca","printForm({scope:'all'})")}
     </div>
-    <div class="sec">Backup no S3 ${has?`<span class="badge ${cfg.lastBackup?"ok":"warn"}">${cfg.lastBackup?"último: "+fdate(cfg.lastBackup):"nunca"}</span>`:""}</div>
-    <div class="card pad">
+    <div class="sec">Backup na nuvem (S3)</div>
+    <details class="card" ${has?"":"open"}>
+      <summary class="li"><div class="tile t4">${icon("cloud")}</div><div class="main"><div class="t">${has?esc(s3.bucket):"Configurar S3"}</div><div class="s">${has?(cfg.lastBackup?"Último backup: "+fdate(cfg.lastBackup):"Nenhum backup ainda"):"AWS, Cloudflare R2, MinIO, Backblaze, Wasabi…"}</div></div><span class="chev">${icon("chev")}</span></summary>
+      <div class="pad" style="padding-top:0">
       ${!N?`<p class="hint">⚠️ Backup S3 só funciona dentro do app Android.</p>`:""}
       <form id="s3f">
         <label>Bucket</label><input name="bucket" value="${esc(s3.bucket)}" placeholder="meu-bucket" autocapitalize="off">
         <div class="row"><div><label>Região</label><input name="region" value="${esc(s3.region)}" placeholder="us-east-1" autocapitalize="off"></div>
         <div><label>Pasta (prefixo)</label><input name="prefix" value="${esc(s3.prefix)}" placeholder="inventario/" autocapitalize="off"></div></div>
-        <label>Endpoint (opcional — R2, MinIO, Backblaze, Wasabi…)</label><input name="endpoint" value="${esc(s3.endpoint)}" placeholder="vazio = AWS" autocapitalize="off">
+        <label>Endpoint (opcional, se não for AWS)</label><input name="endpoint" value="${esc(s3.endpoint)}" placeholder="vazio = AWS" autocapitalize="off">
         <label>Access Key ID</label><input name="accessKey" value="${esc(s3.accessKey)}" autocapitalize="off" autocomplete="off">
         <label>Secret Access Key</label><input name="secretKey" type="password" value="${esc(s3.secretKey)}" autocomplete="off">
-        <label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input type="checkbox" name="auto" style="width:auto" ${s3.auto?"checked":""}> Backup automático ao sair do app (se houve alterações)</label>
-        <div class="row" style="margin-top:12px"><button class="btn ghost" type="submit">💾 Salvar</button><button class="btn" type="button" onclick="s3Backup(false)">☁️ Backup agora</button></div>
-        <div class="row" style="margin-top:8px"><button class="btn sec2" type="button" onclick="s3Restore()">⤵️ Restaurar do S3</button></div>
-        <p class="hint">Salva <code>${esc(s3.prefix||"")}inventario-AAAA-MM-DD.json</code> (1 por dia, guarda histórico) e <code>${esc(s3.prefix||"")}inventario-latest.json</code>. Use uma chave IAM com acesso apenas a este bucket (s3:PutObject, s3:GetObject, s3:ListBucket).</p>
-      </form>
-    </div>
+        <div class="checks"><label><input type="checkbox" name="auto" ${s3.auto?"checked":""}> Backup automático ao sair do app (se houve alterações)</label></div>
+        <div class="row" style="margin-top:6px"><button class="btn ghost" type="submit">Salvar</button><button class="btn" type="button" onclick="s3Backup(false)">${icon("cloud","sm")} Backup agora</button></div>
+        <button class="btn soft block" style="margin-top:8px" type="button" onclick="s3Restore()">${icon("download","sm")} Restaurar do S3</button>
+        <p class="hint">Grava <code>${esc(s3.prefix||"")}inventario-AAAA-MM-DD.json</code> (um por dia) e <code>${esc(s3.prefix||"")}inventario-latest.json</code>. Use uma chave com acesso só a este bucket.</p>
+      </form></div>
+    </details>
     <div class="sec">Sobre</div>
     <div class="card pad">
-      <div>Versão: <b>${esc(N?N.version():"navegador")}</b></div>
+      <div style="display:flex;justify-content:space-between"><span>Versão</span><b>${esc(N?N.version():"navegador")}</b></div>
       <div class="hint">${db.items.length} itens · ${db.storages.length} armazéns · ${db.moves.length} movimentações</div>
-      <div style="margin-top:12px"><button class="btn ghost sm" style="color:var(--danger)" onclick="wipeAll()">Apagar todos os dados</button></div>
-    </div>`;
+    </div>
+    <div style="text-align:center;margin-top:16px"><button class="btn ghost sm text-danger" onclick="wipeAll()">${icon("trash","sm")} Apagar todos os dados</button></div>`;
   $("#s3f").onsubmit = e => { e.preventDefault(); readS3Form(); toast("Configuração salva"); vMore(); };
   fab(null);
 }
@@ -406,13 +717,13 @@ let sheetEl = null;
 function openSheet(title, body, onSubmit, submitLabel="Salvar"){
   closeSheet();
   sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
-  sheetEl.innerHTML = `<form class="sheet" autocomplete="off"><h2>${title}</h2>${body}
+  sheetEl.innerHTML = `<form class="sheet" autocomplete="off"><div class="handle"></div><h2>${title}</h2>${body}
     <div class="foot"><button type="button" class="btn ghost" data-close>Cancelar</button><button class="btn" type="submit">${submitLabel}</button></div></form>`;
-  sheetEl.onclick = e => { if(e.target===sheetEl || e.target.hasAttribute("data-close")) closeSheet(); };
+  sheetEl.onclick = e => { if(e.target===sheetEl || e.target.closest("[data-close]")) closeSheet(); };
   const form = sheetEl.querySelector("form");
   form.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(form)); if(onSubmit(d, form) !== false){ closeSheet(); render(); } };
   document.body.appendChild(sheetEl);
-  const first = form.querySelector("[autofocus]"); if(first) setTimeout(()=>first.focus(), 60);
+  const first = form.querySelector("[autofocus]"); if(first) setTimeout(()=>first.focus(), 80);
   return form;
 }
 function closeSheet(){ if(sheetEl){ sheetEl.remove(); sheetEl=null; } }
@@ -420,9 +731,9 @@ function closeSheet(){ if(sheetEl){ sheetEl.remove(); sheetEl=null; } }
 function storageForm(id, parentId){
   const s = id ? S(id) : {name:"", type:"Caixa", parentId:parentId||"", location:"", notes:""};
   openSheet(id?"Editar armazém":"Novo armazém", `
-    <label>Nome *</label><input name="name" required value="${esc(s.name)}" placeholder="Ex.: Caixa ferramentas" ${id?"":"autofocus"}>
+    <label>Nome *</label><input name="name" required value="${esc(s.name)}" placeholder="Ex.: Caixa de ferramentas" ${id?"":"autofocus"}>
     <label>Tipo</label><select name="type">${Object.keys(TYPES).map(t=>`<option ${t===s.type?"selected":""}>${t}</option>`).join("")}</select>
-    <label>Dentro de (opcional)</label><select name="parentId"><option value="">— nenhum —</option>${storageOptions(s.parentId, id)}</select>
+    <label>Dentro de (opcional)</label><select name="parentId"><option value="">— nenhum (armazém principal) —</option>${storageOptions(s.parentId, id)}</select>
     <label>Localização / referência</label><input name="location" value="${esc(s.location)}" placeholder="Ex.: garagem, prateleira de cima">
     <label>Observação</label><textarea name="notes">${esc(s.notes)}</textarea>`, d => {
     if(!d.name.trim()) return false;
@@ -454,11 +765,11 @@ function itemForm(id, storageId, copyFrom){
     <div><label>Unidade</label><input name="unit" list="units" value="${esc(base.unit)}"></div></div>
     <datalist id="units">${UNITS.map(u=>`<option value="${u}">`).join("")}</datalist>
     <label>Armazém *</label><select name="storageId" required>${storageOptions(base.storageId)}</select>
-    <label>Estado</label><select name="condition"><option value="">—</option>${CONDS.map(c=>`<option ${c===base.condition?"selected":""}>${c}</option>`).join("")}</select>
+    <div class="row"><div><label>Estado</label><select name="condition"><option value="">—</option>${CONDS.map(c=>`<option ${c===base.condition?"selected":""}>${c}</option>`).join("")}</select></div>
+    <div><label>Valor unitário (R$)</label><input name="value" inputmode="decimal" value="${base.value?String(base.value).replace(".",","):""}" placeholder="0,00"></div></div>
     <div class="row"><div><label>Categoria</label><input name="category" list="cats" value="${esc(base.category)}" placeholder="Ex.: Ferramentas"></div>
-    <div><label>Qtd. mínima (alerta)</label><input name="minQty" inputmode="decimal" value="${base.minQty?fq(base.minQty):""}" placeholder="0"></div></div>
+    <div><label>Qtd. mínima</label><input name="minQty" inputmode="decimal" value="${base.minQty?fq(base.minQty):""}" placeholder="alerta"></div></div>
     <datalist id="cats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
-    <label>Valor unitário (R$)</label><input name="value" inputmode="decimal" value="${base.value?String(base.value).replace(".",","):""}" placeholder="0,00">
     <label>Observação</label><textarea name="notes" placeholder="Marca, modelo, cor, detalhes…">${esc(base.notes)}</textarea>`, d => {
     if(!d.name.trim()) return false;
     ui.lastSt = d.storageId;
@@ -494,9 +805,9 @@ function withdrawForm(id){
   const people = [...new Set(db.loans.map(l=>l.who).filter(Boolean))];
   openSheet(`Retirar · ${esc(i.name)}`, `${qtyField(i.qty, i.unit, Math.min(1,i.qty))}
     <label>Tipo</label><div class="radio">
-      <label><input type="radio" name="mode" value="emprestimo" checked><span>🤝 Vai voltar</span></label>
-      <label><input type="radio" name="mode" value="retirada"><span>📤 Baixa definitiva</span></label></div>
-    <p class="hint">"Vai voltar" fica na lista de pendentes para devolução (uso, empréstimo). "Baixa" é consumo, venda, descarte.</p>
+      <label><input type="radio" name="mode" value="emprestimo" checked><span>Vai voltar</span></label>
+      <label><input type="radio" name="mode" value="retirada"><span>Baixa definitiva</span></label></div>
+    <p class="hint">"Vai voltar" fica na lista de pendentes para devolução. "Baixa" é consumo, venda ou descarte.</p>
     <label>Com quem / para quê</label><input name="who" list="people" placeholder="Ex.: João, obra da cozinha">
     <datalist id="people">${people.map(p=>`<option value="${esc(p)}">`).join("")}</datalist>
     <label>Observação</label><input name="note">`, d => {
@@ -574,7 +885,8 @@ function printForm(o={}){
   if(!db.items.length){ toast("Nenhum item para imprimir"); return; }
   const scope = o.scope || "all";
   const searchN = filteredItems().length;
-  const opt = Object.assign({values:true, notes:true, cond:true, cat:false, check:false, group:true, subs:true}, JSON.parse(localStorage.getItem("inv_print")||"{}"));
+  let saved = {}; try{ saved = JSON.parse(localStorage.getItem("inv_print")||"{}"); }catch(e){}
+  const opt = Object.assign({values:true, notes:true, cond:true, cat:false, check:false, group:true, subs:true}, saved);
   const r = (v, label, dis) => `<label><input type="radio" name="scope" value="${v}" ${v===scope?"checked":""} ${dis?"disabled":""}><span>${label}</span></label>`;
   const c = (k, label) => `<label><input type="checkbox" name="${k}" ${opt[k]?"checked":""}> ${label}</label>`;
   openSheet("Imprimir / PDF", `
@@ -593,7 +905,7 @@ function printForm(o={}){
     else { items = db.items.slice(); sub = "Todos os itens"; }
     if(!items.length){ toast("Nada para imprimir"); return false; }
     doPrint(d.title.trim()||"Inventário", sub, items, op);
-  }, "Gerar");
+  }, "Gerar PDF");
 }
 function reportHTML(title, sub, items, op){
   const cols = [op.check&&["☐","c"], ["Item",""], ["Qtd","n"], op.cond&&["Estado",""], op.cat&&["Categoria",""], op.values&&["Valor un.","n"], op.values&&["Total","n"], op.notes&&["Observação",""], !op.group&&["Armazém",""]].filter(Boolean);
@@ -612,20 +924,23 @@ function reportHTML(title, sub, items, op){
   if(op.group){
     const groups = {}; sorted.forEach(i=>{ (groups[i.storageId] = groups[i.storageId] || []).push(i); });
     body = Object.keys(groups).map(k=>({k, p:path(k)})).sort((a,b)=>a.p.localeCompare(b.p,"pt-BR"))
-      .map(({k,p})=>{ const st = S(k); return `<section><h2>${st?TYPES[st.type]||"":""} ${esc(p)} <small>(${groups[k].length})</small></h2>${table(groups[k])}</section>`; }).join("");
+      .map(({k,p})=>`<section><h2>${esc(p)} <small>${S(k)?esc(S(k).type)+" · ":""}${groups[k].length} itens</small></h2>${table(groups[k])}</section>`).join("");
   } else body = table(sorted);
   const tot = sum(items);
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
     @page{size:A4;margin:12mm}
     body{font:10.5pt/1.35 system-ui,Roboto,Arial,sans-serif;color:#111;margin:0}
-    h1{font-size:17pt;margin:0}.meta{color:#555;margin:2px 0 12px;font-size:9.5pt}
-    h2{font-size:11.5pt;margin:14px 0 4px;padding-bottom:3px;border-bottom:2px solid #2f6feb}h2 small{color:#666;font-weight:400}
-    table{width:100%;border-collapse:collapse;margin-bottom:6px}th,td{border-bottom:1px solid #ddd;padding:4px 5px;text-align:left;vertical-align:top}
-    th{font-size:8.5pt;text-transform:uppercase;color:#555;background:#f3f5f9}.n{text-align:right;white-space:nowrap}.c{width:16px;text-align:center}
+    .top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #4f46e5;padding-bottom:8px;margin-bottom:6px}
+    h1{font-size:18pt;margin:0;letter-spacing:-.01em}.meta{color:#555;font-size:9.5pt}
+    .sum{text-align:right;font-size:9.5pt;color:#555}.sum b{display:block;font-size:14pt;color:#111}
+    h2{font-size:11.5pt;margin:16px 0 4px;padding:4px 8px;background:#eef0ff;border-radius:4px;color:#312e81}h2 small{color:#666;font-weight:400;font-size:9pt}
+    table{width:100%;border-collapse:collapse;margin-bottom:6px}th,td{border-bottom:1px solid #e3e3e3;padding:4px 6px;text-align:left;vertical-align:top}
+    th{font-size:8pt;text-transform:uppercase;letter-spacing:.04em;color:#666}.n{text-align:right;white-space:nowrap}.c{width:16px;text-align:center}
     td.o{color:#444;font-size:9pt}small{color:#666}tfoot td{border:0}tr,section h2{break-inside:avoid}thead{display:table-header-group}
-    .tot{margin-top:12px;text-align:right;font-size:12pt}
+    .tot{margin-top:14px;text-align:right;font-size:12pt;border-top:2px solid #111;padding-top:6px}
   </style></head><body>
-  <h1>${esc(title)}</h1><div class="meta">${esc(sub)} · ${items.length} itens · gerado em ${fdate(Date.now())}</div>
+  <div class="top"><div><h1>${esc(title)}</h1><div class="meta">${esc(sub)} · gerado em ${fdate(Date.now())}</div></div>
+  <div class="sum">${items.length} itens${op.values&&tot?`<b>${money(tot)}</b>`:""}</div></div>
   ${body}
   ${op.values&&tot?`<div class="tot">Valor total: <b>${money(tot)}</b></div>`:""}
   </body></html>`;
@@ -639,26 +954,167 @@ function doPrint(title, sub, items, op){
   setTimeout(()=>{ fr.contentWindow.print(); setTimeout(()=>fr.remove(), 2000); }, 300);
 }
 
-/* ====================== Backup ====================== */
+/* ====================== Backup / Importação ====================== */
 const stamp = () => new Date().toISOString().slice(0,10);
 function backupJSON(){ return JSON.stringify(Object.assign({app:"inventario", exportedAt:new Date().toISOString()}, db), null, 1); }
 async function saveFile(name, mime, content){
-  if(N){ try{ await nativeCall("exportFile", name, mime, content); toast("Arquivo salvo ✔"); } catch(e){ if(e.message!=="Cancelado") toast("Erro: "+e.message); } return; }
+  if(N){ try{ await nativeCall("exportFile", name, mime, content); toast("Arquivo salvo ✔"); return true; } catch(e){ if(e.message!=="Cancelado") toast("Erro: "+e.message); return false; } }
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([content], {type:mime})); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+  return true;
 }
-function exportJSON(){ saveFile(`inventario-${stamp()}.json`, "application/json", backupJSON()); }
-function applyImport(text){
-  let d; try{ d = JSON.parse(text); }catch(e){ toast("Arquivo inválido"); return; }
-  if(!d || !Array.isArray(d.items) || !Array.isArray(d.storages)){ toast("Não é um backup do Inventário"); return; }
-  if(!confirm(`Substituir os dados atuais por este backup?\n\nBackup: ${d.items.length} itens, ${d.storages.length} armazéns.\nAtual: ${db.items.length} itens, ${db.storages.length} armazéns.`)) return;
+async function exportJSON(){ if(await saveFile(`inventario-${stamp()}.json`, "application/json", backupJSON())){ cfg.lastExport = Date.now(); saveCfg(); } }
+
+const SAMPLE = {
+  app: "inventario-produtos",
+  _leia_me: [
+    "Lista de produtos para importar no app Inventário.",
+    "Obrigatório: name. Os demais campos são opcionais.",
+    "storage: nome do armazém ('Caixa A') ou caminho completo ('Garagem > Armário > Caixa A').",
+    "Se o armazém não vier ou não for encontrado, o app pergunta onde colocar (ou cria o armazém).",
+    "Também são aceitos nomes em português: nome, quantidade, unidade, valor, estado, categoria, observacao, minimo, armazem."
+  ],
+  _estados_validos: ["Novo","Bom","Usado","Desgastado","Danificado","Para conserto"],
+  items: [
+    {name:"Furadeira de impacto", qty:1, unit:"un", value:349.90, condition:"Bom", category:"Ferramentas", notes:"Bosch 650W, com maleta", storage:"Garagem > Armário de ferramentas"},
+    {name:"Broca para concreto 8mm", qty:4, unit:"un", value:12.5, condition:"Novo", category:"Ferramentas", minQty:2, storage:"Garagem > Armário de ferramentas"},
+    {name:"Parafuso 4x40", qty:150, unit:"un", value:0.12, condition:"Novo", category:"Fixação", minQty:50, storage:"Caixa de parafusos"},
+    {name:"Fita isolante", qty:3, unit:"rolo", value:6.9, category:"Elétrica", storage:"Caixa de elétrica"},
+    {name:"Extensão 10m", qty:2, unit:"un", value:45, condition:"Usado", category:"Elétrica"},
+    {nome:"Lâmpada LED 9W", quantidade:6, unidade:"un", valor:"8,99", estado:"Novo", categoria:"Elétrica", armazem:"Caixa de elétrica"},
+    {name:"Tinta acrílica branca", qty:3.6, unit:"L", value:89.9, condition:"Usado", category:"Pintura", notes:"Galão aberto", storage:"Balde azul"}
+  ]
+};
+function downloadSample(){ saveFile("inventario-exemplo.json", "application/json", JSON.stringify(SAMPLE, null, 2)); }
+
+function pickFile(){
+  if(N) return nativeCall("importFile");
+  return new Promise((res, rej) => { const inp = document.createElement("input"); inp.type="file"; inp.accept=".json,application/json";
+    inp.onchange = () => { const f = inp.files[0]; f ? f.text().then(res) : rej(new Error("Cancelado")); }; inp.click(); });
+}
+function importAny(){
+  pickFile().then(handleImport).catch(e=>{ if(e.message!=="Cancelado") toast("Erro: "+e.message); });
+}
+function handleImport(text){
+  let d; try{ d = JSON.parse(text); }catch(e){ alert("Arquivo JSON inválido:\n"+e.message); return; }
+  const isBackup = d && !Array.isArray(d) && Array.isArray(d.storages) && Array.isArray(d.items) && d.items.some(i=>i && i.storageId);
+  if(isBackup){
+    openSheet("Backup completo", `<p>Este arquivo é um <b>backup completo</b> com ${d.items.length} itens e ${d.storages.length} armazéns.</p>
+      <div class="radio" style="flex-direction:column">
+        <label><input type="radio" name="mode" value="replace" checked><span>Substituir tudo pelo backup</span></label>
+        <label><input type="radio" name="mode" value="items"><span>Só adicionar os itens (escolher armazéns)</span></label></div>
+      <p class="hint">Atual: ${db.items.length} itens e ${db.storages.length} armazéns. Antes de substituir, uma cópia local é guardada.</p>`, f => {
+      if(f.mode==="replace") { applyBackup(d); return; }
+      const sp = {}; d.storages.forEach(s=>sp[s.id]=s);
+      const pth = id => { const o=[]; let s=sp[id], g=0; while(s && g++<50){ o.unshift(s.name); s=sp[s.parentId]; } return o.join(" > "); };
+      setTimeout(()=>importProducts(d.items.map(i=>Object.assign({}, i, {storage: pth(i.storageId), storageId: undefined}))), 50);
+    }, "Continuar");
+    return;
+  }
+  const list = Array.isArray(d) ? d : (d && (d.items || d.produtos || d.itens));
+  if(!Array.isArray(list)){ alert("Não encontrei uma lista de produtos no arquivo.\nUse o JSON de exemplo como modelo (campo \"items\")."); return; }
+  importProducts(list);
+}
+function applyBackup(d){
   rawWrite("db-before-import.json", JSON.stringify(db));
-  db = normalizeDB(d); save(); stack=[]; toast("Backup restaurado ✔"); render();
+  db = normalizeDB(d); save(); stack=[]; toast("Backup restaurado ✔"); setTimeout(render, 0);
 }
-function importJSON(){
-  if(N){ nativeCall("importFile").then(applyImport).catch(e=>{ if(e.message!=="Cancelado") toast("Erro: "+e.message); }); return; }
-  const inp = document.createElement("input"); inp.type="file"; inp.accept=".json,application/json";
-  inp.onchange = () => { const f = inp.files[0]; if(f) f.text().then(applyImport); }; inp.click();
+
+/* importação de produtos com mapeamento de armazém */
+const pick = (o, ...keys) => { for(const k of keys){ if(o[k]!==undefined && o[k]!==null && o[k]!=="") return o[k]; } return undefined; };
+const splitPath = s => String(s).split(/\s*(?:›|>|\/|\\)\s*/).map(x=>x.trim()).filter(Boolean);
+function resolveStorage(label, id){
+  if(id && S(id)) return S(id);
+  if(!label) return null;
+  const parts = splitPath(label), full = norm(parts.join(" > "));
+  let hit = db.storages.find(s => norm(splitPath(path(s.id)).join(" > ")) === full);
+  if(hit) return hit;
+  const last = norm(parts[parts.length-1]);
+  const byName = db.storages.filter(s => norm(s.name) === last);
+  if(byName.length===1) return byName[0];
+  if(byName.length>1 && parts.length>1){ const par = norm(parts[parts.length-2]); hit = byName.find(s => S(s.parentId) && norm(S(s.parentId).name)===par); if(hit) return hit; }
+  return null;
 }
+function guessType(name){
+  const n = norm(name);
+  for(const t of Object.keys(TYPES)) if(n.startsWith(norm(t))) return t;
+  if(/^(quarto|sala|cozinha|garagem|banheiro|lavanderia|escritorio|varanda|deposito|sotao|porao|area)/.test(n)) return "Cômodo";
+  if(/^(estante)/.test(n)) return "Prateleira";
+  if(/^(carro|moto|caminhonete)/.test(n)) return "Veículo";
+  return "Outro";
+}
+function createPath(label, baseParent=""){
+  let parent = baseParent;
+  for(const name of splitPath(label)){
+    let s = db.storages.find(x => (x.parentId||"")===parent && norm(x.name)===norm(name));
+    if(!s){ s = {id:uid(), name, type:guessType(name), parentId:parent, location:"", notes:"", createdAt:Date.now()}; db.storages.push(s); }
+    parent = s.id;
+  }
+  return parent;
+}
+function importProducts(raw){
+  const rows = [], skipped = [];
+  raw.forEach((o, idx) => {
+    if(!o || typeof o!=="object"){ skipped.push(idx+1); return; }
+    const name = String(pick(o,"name","nome","produto","item","descricao") ?? "").trim();
+    if(!name){ skipped.push(idx+1); return; }
+    const cond = String(pick(o,"condition","estado","condicao") ?? "").trim();
+    const condOk = CONDS.find(c => norm(c)===norm(cond)) || (cond ? cond : "");
+    const label = String(pick(o,"storage","armazem","armazém","local","localizacao","storagePath") ?? "").trim();
+    const st = resolveStorage(label, pick(o,"storageId"));
+    rows.push({name, qty:Math.max(0, num(pick(o,"qty","quantidade","qtd","quantity") ?? 1)), unit:String(pick(o,"unit","unidade","un") ?? "un").trim()||"un",
+      value:Math.round(num(pick(o,"value","valor","preco","preço","price") ?? 0)*100)/100, condition:condOk,
+      category:String(pick(o,"category","categoria") ?? "").trim(), notes:String(pick(o,"notes","observacao","observação","obs","nota") ?? "").trim(),
+      minQty:num(pick(o,"minQty","minimo","mínimo","qtdMinima") ?? 0), label, storageId: st ? st.id : ""});
+  });
+  if(!rows.length){ alert("Nenhum produto válido encontrado (o campo \"name\" é obrigatório)."); return; }
+  const unresolved = {};
+  rows.filter(r=>!r.storageId).forEach(r => { (unresolved[r.label] = unresolved[r.label] || []).push(r); });
+  const groups = Object.keys(unresolved).sort((a,b)=> (a==="")-(b==="") || a.localeCompare(b,"pt-BR"));
+  const defSt = S(ui.lastSt) ? ui.lastSt : (cur().v==="storage" ? cur().id : "");
+  const okN = rows.length - groups.reduce((a,g)=>a+unresolved[g].length,0);
+  const opts = (g) => {
+    const create = g ? `<option value="new:root" selected>➕ Criar “${esc(splitPath(g).join(" › "))}”</option>` : (!db.storages.length ? `<option value="new:Importados" selected>➕ Criar “Importados”</option>` : "");
+    const createIn = g && db.storages.length ? `<optgroup label="Criar “${esc(splitPath(g).pop())}” dentro de…">${db.storages.map(s=>({id:s.id,p:path(s.id)})).sort((a,b)=>a.p.localeCompare(b.p,"pt-BR")).map(o=>`<option value="newin:${o.id}">${esc(o.p)} › ${esc(splitPath(g).pop())}</option>`).join("")}</optgroup>` : "";
+    const existing = db.storages.length ? `<optgroup label="Usar armazém existente">${storageOptions(g?"":defSt)}</optgroup>` : "";
+    return `${!g && db.storages.length && !defSt ? `<option value="" disabled selected>Escolha o armazém…</option>`:""}${create}${existing}${createIn}`;
+  };
+  openSheet("Importar produtos", `
+    <div class="card pad" style="margin-top:8px;display:flex;gap:12px;align-items:center"><div class="tile t3">${icon("json")}</div>
+      <div><b>${rows.length} produto${rows.length>1?"s":""}</b> encontrado${rows.length>1?"s":""}<div class="hint" style="margin:0">${okN} com armazém identificado${skipped.length?` · ${skipped.length} ignorado(s) sem nome`:""}</div></div></div>
+    ${groups.length?`<label>Onde guardar os itens sem armazém identificado?</label>
+      ${groups.map((g,x)=>`<div class="map"><div class="t">${g?`“${esc(g)}”`:"Sem armazém informado"} <span class="badge">${unresolved[g].length} ite${unresolved[g].length>1?"ns":"m"}</span></div>
+        <div class="hint" style="margin:2px 0 0">${unresolved[g].slice(0,3).map(r=>esc(r.name)).join(", ")}${unresolved[g].length>3?"…":""}</div>
+        <select name="g${x}" required>${opts(g)}</select></div>`).join("")}`:`<p class="hint">Todos os armazéns foram identificados.</p>`}
+    <div class="checks"><label><input type="checkbox" name="merge" checked> Somar à quantidade se o item já existir no armazém (mesmo nome, unidade e estado)</label></div>
+    <label>Prévia</label>
+    <ul class="prev">${rows.slice(0,6).map(r=>`<li>${esc(r.name)} — ${fq(r.qty)} ${esc(r.unit)}${r.value?" · "+money(r.value):""}${r.storageId?` → <i>${esc(path(r.storageId))}</i>`:""}</li>`).join("")}${rows.length>6?`<li>… e mais ${rows.length-6}</li>`:""}</ul>`, f => {
+    const target = {};
+    for(let x=0; x<groups.length; x++){
+      const g = groups[x], v = f["g"+x];
+      if(!v){ toast("Escolha o armazém de todos os grupos"); return false; }
+      if(v==="new:root") target[g] = createPath(g);
+      else if(v.startsWith("new:")) target[g] = createPath(v.slice(4));
+      else if(v.startsWith("newin:")) target[g] = createPath(splitPath(g).pop(), v.slice(6));
+      else target[g] = v;
+    }
+    let created = 0, merged = 0;
+    rows.forEach(r => {
+      const storageId = r.storageId || target[r.label];
+      const vals = {name:r.name, qty:r.qty, unit:r.unit, value:r.value, condition:r.condition, category:r.category, notes:r.notes, minQty:r.minQty, storageId};
+      const twin = f.merge ? findTwin(Object.assign({id:"_"}, vals), storageId) : null;
+      if(twin){
+        twin.qty = num(twin.qty + r.qty); twin.updatedAt = Date.now();
+        if(r.value) twin.value = r.value; if(r.category && !twin.category) twin.category = r.category; if(r.notes && !twin.notes) twin.notes = r.notes; if(r.minQty) twin.minQty = r.minQty;
+        logMove("importacao", twin, r.qty, {where:path(storageId), note:"importação (somado)"}); merged++;
+      } else {
+        const it = Object.assign({id:uid(), createdAt:Date.now(), updatedAt:Date.now()}, vals);
+        db.items.push(it); logMove("importacao", it, it.qty, {where:path(storageId), note:"importação"}); created++;
+      }
+    });
+    save(); toast(`Importado: ${created} novo(s)${merged?`, ${merged} somado(s)`:""} ✔`);
+  }, "Importar");
+}
+
 function readS3Form(){
   const f = $("#s3f"); if(!f) return;
   const d = Object.fromEntries(new FormData(f));
@@ -693,14 +1149,14 @@ async function s3Restore(){
     toast("Listando backups…");
     const xml = await s3req({method:"GET", key:"", query:{"list-type":"2", prefix:s3.prefix}});
     const doc = new DOMParser().parseFromString(xml, "application/xml");
-    const files = [...doc.getElementsByTagName("Contents")].map(c=>({key:c.getElementsByTagName("Key")[0]?.textContent, size:+c.getElementsByTagName("Size")[0]?.textContent, date:c.getElementsByTagName("LastModified")[0]?.textContent}))
+    const files = [...doc.getElementsByTagName("Contents")].map(c=>({key:c.getElementsByTagName("Key")[0]?.textContent, size:+c.getElementsByTagName("Size")[0]?.textContent}))
       .filter(f=>f.key && f.key.endsWith(".json")).sort((a,b)=>b.key.localeCompare(a.key));
     if(!files.length){ toast("Nenhum backup encontrado"); return; }
     openSheet("Restaurar do S3", `<label>Escolha o backup</label><select name="key">${files.map(f=>`<option value="${esc(f.key)}">${esc(f.key.slice(s3.prefix.length))} · ${(f.size/1024).toFixed(1)} KB</option>`).join("")}</select>
-      <p class="hint">Os dados atuais serão substituídos (uma cópia local é guardada antes).</p>`, d => {
+      <p class="hint">Você poderá escolher entre substituir tudo ou só adicionar os itens.</p>`, d => {
       toast("Baixando…");
-      s3req({method:"GET", key:d.key}).then(applyImport).catch(e=>alert("Erro: "+e.message));
-    }, "Restaurar");
+      s3req({method:"GET", key:d.key}).then(t=>setTimeout(()=>handleImport(t), 50)).catch(e=>alert("Erro: "+e.message));
+    }, "Continuar");
   }catch(e){ alert("Falha ao acessar S3:\n"+e.message); }
 }
 window.onAppPause = () => { if(cfg.s3.auto && cfg.dirty) s3Backup(true); };
@@ -708,7 +1164,7 @@ function wipeAll(){
   if(!confirm("Apagar TODOS os dados do inventário? Isso não pode ser desfeito (faça um backup antes).")) return;
   if(prompt('Digite APAGAR para confirmar')!=="APAGAR") return;
   rawWrite("db-before-wipe.json", JSON.stringify(db));
-  db = emptyDB(); save(); stack=[]; setTab("items"); toast("Dados apagados");
+  db = emptyDB(); save(); stack=[]; setTab("home"); toast("Dados apagados");
 }
 
 render();
