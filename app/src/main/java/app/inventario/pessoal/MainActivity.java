@@ -21,6 +21,7 @@ import android.util.Base64;
 import android.view.View;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -111,6 +112,8 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
+        // Sem WebChromeClient o WebView ignora confirm()/alert() e retorna "não" em silêncio.
+        web.setWebChromeClient(new WebChromeClient());
         web.addJavascriptInterface(new Bridge(), "Android");
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }

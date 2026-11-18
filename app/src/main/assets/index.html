@@ -73,7 +73,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin:12p
 .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin:10px 0;overflow:hidden}
 .pad{padding:14px 16px}
 .li{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;position:relative}
-.li+.li::before{content:"";position:absolute;top:0;left:64px;right:0;border-top:1px solid var(--line)}
+.li+.li::before,.sw+.sw .li::before{content:"";position:absolute;top:0;left:64px;right:0;border-top:1px solid var(--line)}
 .li:active{background:var(--card2)}
 .li .main{flex:1;min-width:0}
 .li .t{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -144,9 +144,15 @@ nav button.on .pill{background:var(--primary-soft)}
 .radio label:has(input:disabled){opacity:.45}
 .checks label{display:flex;gap:10px;align-items:center;color:var(--text);margin:10px 0;font-size:14px;font-weight:500}
 .checks input{width:20px;height:20px;accent-color:var(--primary);flex:none}
-.selbar{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:8;background:var(--text);color:var(--bg);display:flex;align-items:center;gap:8px;padding:10px 12px 10px 16px;border-radius:16px;max-width:740px;margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.selbar b{flex:1}.selbar .btn{padding:8px 12px;font-size:13px}
-.selbar .btn.ghost{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 35%,transparent)}
+.selbar{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:8;background:var(--text);color:var(--bg);display:flex;align-items:center;gap:2px;padding:6px 6px 6px 16px;border-radius:16px;max-width:740px;margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.selbar b{flex:1;font-size:14px;white-space:nowrap}
+.sbtn{border:0;background:transparent;color:var(--bg);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:650;padding:4px 5px;border-radius:10px;cursor:pointer;min-width:44px}
+.sbtn:disabled{opacity:.35}.sbtn.danger{color:#ef4444}
+.dlg-bg{position:fixed;inset:0;z-index:60;background:rgba(10,12,20,.55);display:grid;place-items:center;padding:24px;animation:fade .15s}
+.dlg{background:var(--card);border-radius:22px;padding:22px 20px 18px;width:100%;max-width:380px;box-shadow:0 20px 50px rgba(0,0,0,.3);animation:up .18s}
+.dlg h3{margin:0 0 6px;font-size:18px;letter-spacing:-.01em}.dlg p{margin:0;color:var(--text2)}
+.dlg .dlg-in{margin-top:14px}
+.dlg-b{display:flex;gap:10px;margin-top:20px}.dlg-b .btn{flex:1}
 
 /* item detail */
 .hero{border-radius:22px;padding:18px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:var(--shadow-lg);margin:6px 0 12px;position:relative;overflow:hidden}
@@ -207,6 +213,15 @@ details[open] .chev{transform:rotate(90deg)}
 .map{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0;background:var(--card)}
 .map .t{font-weight:650}.map select{margin-top:6px}
 .prev{font-size:13px;color:var(--text2);margin:6px 0 0;padding-left:18px}
+.sw{position:relative;overflow:hidden}
+.sw .li{background:var(--card);transition:transform .22s cubic-bezier(.2,.8,.2,1);touch-action:pan-y;z-index:1}
+.sw.dragging .li{transition:none}
+.sw.dragging .sw-act,.sw.open .sw-act{visibility:visible}
+body:has(#selbar) .toast{bottom:calc(160px + env(safe-area-inset-bottom))}
+.sw-act{visibility:hidden;position:absolute;inset:0;background:var(--danger);color:#fff;display:flex;align-items:center;justify-content:flex-end;gap:6px;padding-right:20px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;width:100%}
+.toast.undo{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 18px;left:16px;right:16px;transform:none;max-width:560px;margin:0 auto;text-align:left}
+.toast.undo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast.undo button{border:0;background:color-mix(in srgb,var(--bg) 18%,transparent);color:var(--bg);font-weight:750;padding:8px 12px;border-radius:10px;cursor:pointer}
 .tile.pic{padding:0;overflow:hidden;background:var(--card2)}
 .tile.pic img{width:100%;height:100%;object-fit:cover;display:block}
 .cover{position:relative;border-radius:22px;overflow:hidden;margin:6px 0 10px;background:var(--card2);aspect-ratio:4/3;max-height:360px;width:100%;cursor:pointer;box-shadow:var(--shadow)}
@@ -279,7 +294,7 @@ const money = n => (n||0).toLocaleString("pt-BR", {style:"currency", currency:"B
 const moneyShort = n => n>=1e6 ? "R$ "+(n/1e6).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mi" : n>=1e4 ? "R$ "+(n/1e3).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mil" : money(n);
 const fdate = t => new Date(t).toLocaleString("pt-BR", {day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
 const fday = t => new Date(t).toLocaleDateString("pt-BR", {day:"2-digit",month:"2-digit"});
-function toast(msg){ document.querySelectorAll(".toast").forEach(t=>t.remove()); const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
+function toast(msg){ document.querySelectorAll(".toast:not(.undo)").forEach(t=>t.remove()); const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
 
 /* ícones (traço, estilo Lucide) */
 const IC = {
@@ -357,6 +372,31 @@ function logMove(type, item, qty, extra={}){
 function findTwin(item, storageId){
   return db.items.find(i => i.id!==item.id && i.storageId===storageId && norm(i.name)===norm(item.name) && (i.unit||"")===(item.unit||"") && (i.condition||"")===(item.condition||""));
 }
+
+/* ====================== Diálogos ======================
+   O WebView do Android não mostra confirm/alert/prompt nativos; usamos diálogos próprios. */
+const dlgStack = [];
+function dialog({title="", msg="", ok="OK", cancel=null, danger=false, input=null}){
+  return new Promise(res => {
+    const bg = document.createElement("div"); bg.className = "dlg-bg";
+    bg.innerHTML = `<div class="dlg" role="dialog" aria-modal="true">${title?`<h3>${esc(title)}</h3>`:""}${msg?`<p>${esc(msg).replace(/\n/g,"<br>")}</p>`:""}
+      ${input!==null?`<input class="dlg-in" autocomplete="off" autocapitalize="characters" placeholder="${esc(input)}">`:""}
+      <div class="dlg-b">${cancel?`<button class="btn ghost" data-r="0">${esc(cancel)}</button>`:""}<button class="btn ${danger?"danger":""}" data-r="1">${esc(ok)}</button></div></div>`;
+    const no = input!==null ? null : false;
+    const done = v => { bg.remove(); const k = dlgStack.indexOf(closer); if(k>=0) dlgStack.splice(k,1); res(v); };
+    const closer = () => done(no);
+    dlgStack.push(closer);
+    bg.onclick = e => {
+      const b = e.target.closest("[data-r]");
+      if(b) done(b.dataset.r==="1" ? (input!==null ? bg.querySelector(".dlg-in").value : true) : no);
+      else if(e.target===bg && cancel) done(no);
+    };
+    document.body.appendChild(bg);
+    const inp = bg.querySelector(".dlg-in"); if(inp) setTimeout(()=>inp.focus(), 60);
+  });
+}
+const ask = (msg, ok="Confirmar", danger=false, title="") => dialog({title, msg, ok, cancel:"Cancelar", danger});
+window.alert = msg => { dialog({msg:String(msg)}); };
 
 /* ====================== Fotos (WebP) ====================== */
 const PH_BASE = "https://appassets.androidplatform.net/photos/";
@@ -443,10 +483,77 @@ function openViewer(kind, id, idx){
     const p = ph[at()];
     if(a.dataset.a==="close") closeViewer();
     else if(a.dataset.a==="cover"){ o.photos = [p, ...ph.filter(x=>x!==p)]; save(); closeViewer(); render(); toast("Definida como capa"); }
-    else if(a.dataset.a==="del"){ if(!confirm("Excluir esta foto?")) return; o.photos = ph.filter(x=>x!==p); save(); gcPhotos([p]); closeViewer(); render(); toast("Foto excluída"); }
+    else if(a.dataset.a==="del"){ ask("Excluir esta foto?", "Excluir", true).then(y => { if(!y) return; o.photos = ph.filter(x=>x!==p); save(); gcPhotos([p]); closeViewer(); render(); toast("Foto excluída"); }); }
   };
 }
 function closeViewer(){ if(viewerEl){ viewerEl.remove(); viewerEl = null; } }
+
+/* ====================== Arrastar para excluir ====================== */
+const sw = {el:null, x0:0, y0:0, dx:0, base:0, active:false, open:null, justSwiped:false};
+const OPEN_W = 96;
+function swLi(el){ return el && el.querySelector(":scope > .li"); }
+function closeSwipe(el){ const li = swLi(el); if(li) li.style.transform = ""; if(sw.open===el) sw.open = null; setTimeout(()=>{ if(sw.open!==el && !el.classList.contains("dragging")) el.classList.remove("open"); }, 240); }
+document.addEventListener("pointerdown", e => {
+  const row = e.target.closest(".sw");
+  if(sw.open && sw.open!==row) closeSwipe(sw.open);
+  if(!row || inSel() || e.button>0) return;
+  if(e.target.closest(".sw-act")){ e.preventDefault(); return; }
+  Object.assign(sw, {el:row, x0:e.clientX, y0:e.clientY, dx:0, active:false, base: row===sw.open ? -OPEN_W : 0});
+});
+document.addEventListener("pointermove", e => {
+  if(!sw.el) return;
+  const dx = e.clientX - sw.x0, dy = e.clientY - sw.y0;
+  if(!sw.active){
+    if(Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)*1.4){ sw.active = true; sw.el.classList.add("dragging"); hideTip(); }
+    else { if(Math.abs(dy) > 10) sw.el = null; return; }
+  }
+  sw.dx = Math.min(0, sw.base + dx);
+  swLi(sw.el).style.transform = `translateX(${sw.dx}px)`;
+});
+function finishSwipe(){
+  const el = sw.el; sw.el = null;
+  if(!el || !sw.active) return;
+  sw.active = false; sw.justSwiped = true; setTimeout(()=>sw.justSwiped=false, 400);
+  el.classList.remove("dragging"); el.classList.add("open");
+  const li = swLi(el), w = el.offsetWidth;
+  if(sw.dx < -w*0.5){ li.style.transform = `translateX(${-w}px)`; sw.open = null; setTimeout(()=>swipeAction(el), 170); }
+  else if(sw.dx < -45){ li.style.transform = `translateX(${-OPEN_W}px)`; sw.open = el; }
+  else closeSwipe(el);
+}
+document.addEventListener("pointerup", finishSwipe);
+document.addEventListener("pointercancel", finishSwipe);
+document.addEventListener("click", e => {
+  if(sw.justSwiped){ e.stopPropagation(); e.preventDefault(); sw.justSwiped = false; return; }
+  const act = e.target.closest(".sw-act");
+  if(act){ e.stopPropagation(); swipeAction(act.closest(".sw")); }
+}, true);
+function swipeAction(el){
+  const {kind, id} = el.dataset;
+  if(kind==="item") swipeDeleteItem(id);
+  else { closeSwipe(el); deleteStorage(id); }
+}
+function swipeDeleteItem(id){
+  const i = I(id); if(!i) return;
+  const snap = JSON.stringify(db);
+  logMove("exclusao", i, i.qty, {where:path(i.storageId)});
+  db.items = db.items.filter(x=>x.id!==id);
+  ui.sel.delete(id); save(); render();
+  toastUndo(`"${i.name}" excluído`, () => { db = normalizeDB(JSON.parse(snap)); save(); render(); toast("Item restaurado"); }, () => gcPhotos(i.photos));
+}
+let undoState = null;
+function toastUndo(msg, onUndo, onCommit){
+  if(undoState) undoState.commit();
+  document.querySelectorAll(".toast").forEach(t=>t.remove());
+  const t = document.createElement("div"); t.className = "toast undo";
+  t.innerHTML = `<span>${esc(msg)}</span><button>Desfazer</button>`;
+  document.body.appendChild(t);
+  const st = {done:false};
+  const end = () => { st.done = true; clearTimeout(st.tm); t.remove(); if(undoState===st) undoState = null; };
+  st.commit = () => { if(st.done) return; end(); if(onCommit) onCommit(); };
+  st.tm = setTimeout(st.commit, 5000);
+  t.querySelector("button").onclick = () => { if(st.done) return; end(); onUndo(); };
+  undoState = st;
+}
 
 /* tooltip dos gráficos */
 const tipEl = document.createElement("div"); tipEl.className = "tip";
@@ -472,9 +579,10 @@ function setTab(t){ tab=t; stack=[]; render(); window.scrollTo(0,0); }
 function openItems(filter, q=""){ ui.filter = filter; ui.q = q; setTab("items"); }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => setTab(b.dataset.tab));
 window.onBack = () => {
+  if(dlgStack.length){ dlgStack[dlgStack.length-1](); return true; }
   if(viewerEl){ closeViewer(); return true; }
   if(document.querySelector(".sheet-bg")){ closeSheet(); return true; }
-  if(ui.selMode && tab==="items" && !stack.length){ selExit(); return true; }
+  if(inSel()){ selExit(); return true; }
   if(stack.length){ stack.pop(); render(); return true; }
   if(tab!=="home"){ setTab("home"); return true; }
   return false;
@@ -494,44 +602,93 @@ function render(){
   (views[c.v] || vHome)(c);
   selBar();
 }
+/* seleção múltipla: na lista de itens (ctx "list") ou dentro de um armazém (ctx = id do armazém) */
+function inSel(){
+  if(!ui.selMode) return false;
+  const c = cur();
+  return ui.selCtx==="list" ? (tab==="items" && !stack.length) : (c.v==="storage" && c.id===ui.selCtx);
+}
+const selItems = () => ui.selCtx==="list" ? filteredItems() : db.items.filter(i=>i.storageId===ui.selCtx);
 function selBar(){
   let b = $("#selbar");
-  const show = ui.selMode && tab==="items" && !stack.length;
-  if(!show){ if(b) b.remove(); return; }
+  if(ui.selMode && !inSel()){ ui.selMode = false; ui.sel.clear(); }
+  if(!inSel()){ if(b) b.remove(); return; }
   if(!b){ b = document.createElement("div"); b.id="selbar"; b.className="selbar"; document.body.appendChild(b); }
-  b.innerHTML = `<b>${ui.sel.size} selecionado(s)</b>
-    <button class="btn ghost" onclick="selAll()">Todos</button>
-    <button class="btn" onclick="printForm({scope:'sel'})" ${ui.sel.size?"":"disabled"}>${icon("printer","sm")} PDF</button>
-    <button class="btn ghost" onclick="selExit()" aria-label="Sair">${icon("x","sm")}</button>`;
+  const n = ui.sel.size, dis = n ? "" : "disabled";
+  b.innerHTML = `<b>${n} selecionado${n!==1?"s":""}</b>
+    <button class="sbtn" onclick="selAll()">${icon("checksq")}Todos</button>
+    <button class="sbtn" onclick="bulkMove()" ${dis}>${icon("swap")}Mover</button>
+    <button class="sbtn" onclick="printForm({scope:'sel'})" ${dis}>${icon("printer")}PDF</button>
+    <button class="sbtn danger" onclick="bulkDelete()" ${dis}>${icon("trash")}Excluir</button>
+    <button class="sbtn" onclick="selExit()">${icon("x")}Sair</button>`;
 }
+function selRefresh(){ if(ui.selCtx==="list"){ listItems(); selBar(); } else render(); }
 function rowTap(id){
-  if(ui.selMode && tab==="items" && !stack.length){ ui.sel.has(id) ? ui.sel.delete(id) : ui.sel.add(id); listItems(); selBar(); }
+  if(inSel()){ ui.sel.has(id) ? ui.sel.delete(id) : ui.sel.add(id); selRefresh(); }
   else go({v:'item',id});
 }
-function selStart(){ ui.selMode = true; render(); }
+function selStart(ctx){ ui.selMode = true; ui.selCtx = ctx; ui.sel.clear(); render(); }
 function selExit(){ ui.selMode = false; ui.sel.clear(); render(); }
-function selAll(){ const l = filteredItems(); const all = l.every(i=>ui.sel.has(i.id)); l.forEach(i=> all ? ui.sel.delete(i.id) : ui.sel.add(i.id)); listItems(); selBar(); }
+function selAll(){ const l = selItems(); const all = l.length && l.every(i=>ui.sel.has(i.id)); l.forEach(i=> all ? ui.sel.delete(i.id) : ui.sel.add(i.id)); selRefresh(); }
+async function bulkDelete(){
+  const items = db.items.filter(i=>ui.sel.has(i.id)); if(!items.length) return;
+  const loans = items.filter(i=>loanedQty(i.id)).length;
+  if(!await ask(`Excluir ${items.length} ite${items.length>1?"ns":"m"}?${loans?`\n${loans} com empréstimo em aberto.`:""}\nEssa ação não pode ser desfeita.`, "Excluir", true, "Excluir selecionados")) return;
+  const ids = new Set(items.map(i=>i.id)), photos = items.flatMap(i=>i.photos||[]);
+  items.forEach(i=>logMove("exclusao", i, i.qty, {where:path(i.storageId), note:"exclusão em lote"}));
+  db.items = db.items.filter(i=>!ids.has(i.id));
+  save(); gcPhotos(photos); ui.selMode = false; ui.sel.clear(); render();
+  toast(`${items.length} ite${items.length>1?"ns excluídos":"m excluído"}`);
+}
+function bulkMove(){
+  const items = db.items.filter(i=>ui.sel.has(i.id)); if(!items.length) return;
+  if(db.storages.length<2){ toast("Crie outro armazém para mover"); return; }
+  const exclude = ui.selCtx!=="list" ? ui.selCtx : "";
+  openSheet(`Mover ${items.length} ite${items.length>1?"ns":"m"}`, `
+    <label>Para *</label><select name="to" required><option value="" disabled selected>Escolha o armazém…</option>${storageOptions("").replace(exclude?`value="${exclude}"`:"\u0000", `value="${exclude}" disabled`)}</select>
+    <p class="hint">Move a quantidade toda de cada item. Se já existir um item igual no destino, as quantidades são somadas.</p>
+    <label>Observação</label><input name="note">`, d => {
+    if(!d.to){ toast("Escolha o armazém"); return false; }
+    let n = 0; items.forEach(i => { if(i.storageId!==d.to){ moveWhole(i, d.to, d.note.trim()); n++; } });
+    save(); ui.selMode = false; ui.sel.clear(); toast(`${n} ite${n!==1?"ns movidos":"m movido"} para ${S(d.to).name}`);
+  }, "Mover");
+}
+/* move o item inteiro; mescla com item igual no destino. Retorna o item resultante. */
+function moveWhole(i, to, note){
+  const twin = findTwin(i, to);
+  logMove("transferencia", i, i.qty, {from:path(i.storageId), to:path(to), note});
+  if(twin){
+    twin.qty = num(twin.qty + i.qty); twin.updatedAt = Date.now();
+    twin.photos = [...new Set([...(twin.photos||[]), ...(i.photos||[])])];
+    db.loans.forEach(l=>{ if(l.itemId===i.id) l.itemId = twin.id; });
+    db.moves.forEach(m=>{ if(m.itemId===i.id) m.itemId = twin.id; });
+    db.items = db.items.filter(x=>x.id!==i.id);
+    return twin;
+  }
+  i.storageId = to; i.updatedAt = Date.now();
+  return i;
+}
 
 /* ====================== Linhas ====================== */
 function itemRow(i, showPath=true){
   const lq = loanedQty(i.id), low = isLow(i);
   const st = S(i.storageId);
-  const sm = ui.selMode && tab==="items" && !stack.length, on = sm && ui.sel.has(i.id);
-  return `<div class="li ${on?"sel":""}" onclick="rowTap('${i.id}')">
+  const sm = inSel(), on = sm && ui.sel.has(i.id);
+  return `<div class="sw" data-kind="item" data-id="${i.id}"><button class="sw-act" tabindex="-1">${icon("trash","sm")}Excluir</button><div class="li ${on?"sel":""}" onclick="rowTap('${i.id}')">
     ${sm?`<div class="tile chk">${icon("check")}</div>`:(i.photos&&i.photos.length)?`<div class="tile pic">${phImg(i.photos[0],true)}</div>`:tile(st&&st.type)}
     <div class="main"><div class="t">${esc(i.name)}${i.condition?`<span class="badge ${condClass(i.condition)}">${esc(i.condition)}</span>`:""}</div>
     <div class="s">${showPath?esc(path(i.storageId)):esc(i.category||i.notes||"")}${i.value?" · "+money(i.value):""}</div></div>
-    <div class="q" style="${low||i.qty===0?"color:var(--danger)":""}">${fq(i.qty)} <span style="font-weight:600">${esc(i.unit)}</span>${lq?`<small>+${fq(lq)} fora</small>`:low?`<small>mín ${fq(i.minQty)}</small>`:""}</div></div>`;
+    <div class="q" style="${low||i.qty===0?"color:var(--danger)":""}">${fq(i.qty)} <span style="font-weight:600">${esc(i.unit)}</span>${lq?`<small>+${fq(lq)} fora</small>`:low?`<small>mín ${fq(i.minQty)}</small>`:""}</div></div></div>`;
 }
 function storageRow(s){
   const ids = descendants(s.id);
   const its = db.items.filter(i=>ids.includes(i.storageId));
   const val = its.reduce((a,i)=>a+itemTotal(i),0);
   const subs = db.storages.filter(x=>x.parentId===s.id).length;
-  return `<div class="li" onclick="go({v:'storage',id:'${s.id}'})">
+  return `<div class="sw" data-kind="storage" data-id="${s.id}"><button class="sw-act" tabindex="-1">${icon("trash","sm")}Excluir</button><div class="li" onclick="go({v:'storage',id:'${s.id}'})">
     ${(s.photos&&s.photos.length)?`<div class="tile pic">${phImg(s.photos[0],true)}</div>`:tile(s.type)}
     <div class="main"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.type)}${s.location?" · "+esc(s.location):""}${subs?` · ${subs} dentro`:""}</div></div>
-    <div class="q">${its.length}<small>${val?moneyShort(val):"itens"}</small></div></div>`;
+    <div class="q">${its.length}<small>${val?moneyShort(val):"itens"}</small></div></div></div>`;
 }
 function loanRow(l){
   const rem = l.qty - l.returned;
@@ -663,7 +820,7 @@ function backupNag(){
 function vItems(){
   const tot = db.items.reduce((a,i)=>a+itemTotal(i),0);
   header("Itens", `${db.items.length} itens${tot?` · ${money(tot)}`:""}`, false,
-    `${ui.selMode?"":hbtn("checksq","selStart()","Selecionar")}${hbtn("printer", "printForm({scope:ui.q||ui.filter!=='all'?'search':'all'})", "Imprimir")}`);
+    `${inSel()?"":hbtn("checksq","selStart('list')","Selecionar")}${hbtn("printer", "printForm({scope:ui.q||ui.filter!=='all'?'search':'all'})", "Imprimir")}`);
   const app = $("#app");
   if(!app.querySelector("#q")){
     app.innerHTML = `<div class="searchbox">${icon("search")}<input id="q" type="search" placeholder="Buscar item, categoria, local, pessoa…" autocomplete="off"></div>
@@ -674,7 +831,7 @@ function vItems(){
   const chips = [["all","Todos"],["out","Emprestados"],["low","Estoque baixo"],["zero","Zerados"],...CONDS.map(c=>["c:"+c,c])];
   $("#chips").innerHTML = chips.map(([k,l])=>`<button class="chip ${ui.filter===k?"on":""}" onclick="ui.filter='${k}';vItems()">${l}</button>`).join("");
   listItems();
-  fab(ui.selMode ? null : () => itemForm());
+  fab(inSel() ? null : () => itemForm());
 }
 function filteredItems(){
   const terms = norm(ui.q).split(/\s+/).filter(Boolean);
@@ -696,7 +853,7 @@ function listItems(){
     el.innerHTML = `<div class="empty"><div class="tile big t1">${icon("box")}</div><p>Comece criando um <b>armazém</b><br>(caixa, balde, cômodo, armário…)</p><button class="btn" onclick="storageForm()">Criar armazém</button></div>`; return;
   }
   if(!list.length){ el.innerHTML = `<div class="empty"><div class="tile big">${icon("search")}</div><p>${db.items.length?"Nada encontrado.":"Nenhum item ainda. Toque em + para adicionar."}</p></div>`; return; }
-  el.innerHTML = `<div class="card">${list.slice(0,500).map(i=>itemRow(i)).join("")}</div>${list.length>500?`<p class="hint">Mostrando 500 de ${list.length}. Refine a busca.</p>`:""}`;
+  el.innerHTML = `<div class="card">${list.slice(0,500).map(i=>itemRow(i)).join("")}</div>${list.length>500?`<p class="hint">Mostrando 500 de ${list.length}. Refine a busca.</p>`:""}${inSel()?"":`<p class="hint" style="text-align:center">Dica: arraste um item para a esquerda para excluir</p>`}`;
 }
 
 function vStorages(){
@@ -710,7 +867,8 @@ function vStorages(){
 function vStorage({id}){
   const s = S(id); if(!s){ stack.pop(); return render(); }
   const parent = S(s.parentId);
-  header(esc(s.name), "", true, hbtn("printer", `printForm({scope:'storage',storageId:'${id}'})`, "Imprimir") + hbtn("edit", `storageForm('${id}')`, "Editar"));
+  const nIt = db.items.filter(i=>i.storageId===id).length;
+  header(esc(s.name), "", true, (nIt && !inSel() ? hbtn("checksq", `selStart('${id}')`, "Selecionar") : "") + hbtn("printer", `printForm({scope:'storage',storageId:'${id}'})`, "Imprimir") + hbtn("edit", `storageForm('${id}')`, "Editar"));
   const subs = db.storages.filter(x=>x.parentId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
   const items = db.items.filter(i=>i.storageId===id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
   const all = descendants(id), allItems = db.items.filter(i=>all.includes(i.storageId)), tot = allItems.reduce((a,i)=>a+itemTotal(i),0);
@@ -732,10 +890,10 @@ function vStorage({id}){
     </div>
     ${photoEmpty("storage", id)}
     ${subs.length?`<div class="sec">Dentro deste (${subs.length})</div><div class="card">${subs.map(storageRow).join("")}</div>`:""}
-    <div class="sec">Itens (${items.length})</div>
+    <div class="sec">Itens (${items.length}) ${items.length && !inSel() ? `<a onclick="selStart('${id}')">Selecionar</a>` : ""}</div>
     ${items.length?`<div class="card">${items.map(i=>itemRow(i,false)).join("")}</div>`:`<div class="card empty" style="padding:24px">Nenhum item aqui</div>`}
     <div style="margin-top:24px;text-align:center"><button class="btn ghost sm text-danger" onclick="deleteStorage('${id}')">${icon("trash","sm")} Excluir armazém</button></div>`;
-  fab(() => itemForm(null, id), "Item");
+  fab(inSel() ? null : () => itemForm(null, id), "Item");
 }
 
 function vItem({id}){
@@ -867,17 +1025,29 @@ function storageForm(id, parentId){
     db.storages.push(n); save(); toast("Armazém criado"); if(tab==="storages" && !stack.length) stack.push({v:"storage",id:n.id});
   }, "Salvar", {onOpen: form => bindPhotoEditor(form, ph), onCancel: () => ph.added.forEach(rmPhoto)});
 }
-function deleteStorage(id){
+function leaveStorage(id){ const c = cur(); if(c.v==="storage" && c.id===id) stack.pop(); render(); }
+async function deleteStorage(id){
   const s = S(id), subs = db.storages.filter(x=>x.parentId===id), items = db.items.filter(i=>i.storageId===id);
   if(subs.length || items.length){
     const parent = S(s.parentId);
-    if(!parent){ alert(`"${s.name}" não está vazio (${items.length} itens, ${subs.length} armazéns dentro). Transfira ou exclua o conteúdo primeiro.`); return; }
-    if(!confirm(`"${s.name}" não está vazio. Mover o conteúdo para "${parent.name}" e excluir?`)) return;
+    if(!parent){
+      if(subs.length || !await ask(`"${s.name}" tem ${items.length} item(ns)${subs.length?` e ${subs.length} armazém(ns) dentro`:""}.\nExcluir o armazém e TODOS os itens dele?`, "Excluir tudo", true, "Armazém não está vazio")){
+        if(subs.length) await dialog({title:"Armazém não está vazio", msg:`"${s.name}" tem ${subs.length} armazém(ns) dentro. Mova ou exclua esses armazéns primeiro.`});
+        return;
+      }
+      const ph = items.flatMap(i=>i.photos||[]);
+      items.forEach(i=>logMove("exclusao", i, i.qty, {where:path(id), note:"armazém excluído"}));
+      db.items = db.items.filter(i=>i.storageId!==id);
+      db.storages = db.storages.filter(x=>x.id!==id);
+      save(); gcPhotos([...ph, ...(s.photos||[])]); toast("Armazém e itens excluídos"); leaveStorage(id);
+      return;
+    }
+    if(!await ask(`"${s.name}" não está vazio. Mover o conteúdo para "${parent.name}" e excluir?`, "Mover e excluir", true)) return;
     subs.forEach(x=>x.parentId=parent.id);
     items.forEach(i=>{ logMove("transferencia", i, i.qty, {from:path(id), to:path(parent.id), note:"armazém excluído"}); i.storageId=parent.id; });
-  } else if(!confirm(`Excluir "${s.name}"?`)) return;
+  } else if(!await ask(`Excluir o armazém "${s.name}"?`, "Excluir", true)) return;
   db.storages = db.storages.filter(x=>x.id!==id);
-  save(); gcPhotos(s.photos); toast("Armazém excluído"); stack.pop(); render();
+  save(); gcPhotos(s.photos); toast("Armazém excluído"); leaveStorage(id);
 }
 
 function itemForm(id, storageId, copyFrom){
@@ -914,9 +1084,9 @@ function itemForm(id, storageId, copyFrom){
     save(); gcPhotos(ph.removed);
   }, "Salvar", {onOpen: form => bindPhotoEditor(form, ph), onCancel: () => ph.added.forEach(rmPhoto)});
 }
-function deleteItem(id){
+async function deleteItem(id){
   const i = I(id);
-  if(!confirm(`Excluir "${i.name}"? ${loanedQty(id)?"Ele tem empréstimos em aberto.":""}`)) return;
+  if(!await ask(`Excluir "${i.name}"?${loanedQty(id)?"\nEle tem empréstimos em aberto.":""}`, "Excluir", true)) return;
   logMove("exclusao", i, i.qty, {where:path(i.storageId)});
   db.items = db.items.filter(x=>x.id!==id);
   save(); gcPhotos(i.photos); toast("Item excluído"); stack.pop(); render();
@@ -966,13 +1136,12 @@ function transferForm(id){
     const q = num(d.qty);
     if(q<=0 || q>i.qty){ toast("Quantidade inválida"); return false; }
     if(d.to===i.storageId){ toast("Escolha outro armazém"); return false; }
-    const from = path(i.storageId), to = path(d.to);
-    const twin = findTwin(i, d.to);
-    logMove("transferencia", i, q, {from, to, note:d.note.trim()});
     if(q===i.qty){
-      if(twin){ twin.qty = num(twin.qty+q); twin.updatedAt=Date.now(); twin.photos = [...new Set([...(twin.photos||[]), ...(i.photos||[])])]; db.loans.forEach(l=>{ if(l.itemId===i.id) l.itemId=twin.id; }); db.moves.forEach(m=>{ if(m.itemId===i.id) m.itemId=twin.id; }); db.items = db.items.filter(x=>x.id!==i.id); stack[stack.length-1] = {v:"item", id:twin.id}; }
-      else { i.storageId = d.to; i.updatedAt = Date.now(); }
+      const t = moveWhole(i, d.to, d.note.trim());
+      if(t!==i) stack[stack.length-1] = {v:"item", id:t.id};
     } else {
+      const twin = findTwin(i, d.to);
+      logMove("transferencia", i, q, {from:path(i.storageId), to:path(d.to), note:d.note.trim()});
       i.qty = num(i.qty-q); i.updatedAt = Date.now();
       if(twin){ twin.qty = num(twin.qty+q); twin.updatedAt=Date.now(); }
       else db.items.push(Object.assign({}, i, {id:uid(), qty:q, storageId:d.to, photos:(i.photos||[]).slice(), createdAt:Date.now(), updatedAt:Date.now()}));
@@ -1328,15 +1497,16 @@ async function s3FetchPhotos(){
   saveCfg(); toast(`${ok} de ${miss.length} foto(s) baixada(s)`); render();
 }
 window.onAppPause = () => { if(cfg.s3.auto && cfg.dirty) s3Backup(true); };
-function cleanPhotos(){
+async function cleanPhotos(){
   const refs = photoRefs(), orphan = JSON.parse(N.listPhotos()).filter(id => !refs.has(id));
   if(!orphan.length){ toast("Nenhuma foto sobrando"); return; }
-  if(!confirm(`Apagar ${orphan.length} foto(s) que não estão em nenhum item ou armazém?`)) return;
+  if(!await ask(`Apagar ${orphan.length} foto(s) que não estão em nenhum item ou armazém?`, "Apagar", true)) return;
   orphan.forEach(rmPhoto); toast(`${orphan.length} foto(s) apagada(s)`); vMore();
 }
-function wipeAll(){
-  if(!confirm("Apagar TODOS os dados do inventário? Isso não pode ser desfeito (faça um backup antes).")) return;
-  if(prompt('Digite APAGAR para confirmar')!=="APAGAR") return;
+async function wipeAll(){
+  if(!await ask("Apagar TODOS os dados do inventário? Isso não pode ser desfeito (faça um backup antes).", "Continuar", true, "Apagar tudo")) return;
+  const t = await dialog({title:"Confirmação", msg:"Digite APAGAR para confirmar.", input:"APAGAR", ok:"Apagar tudo", cancel:"Cancelar", danger:true});
+  if((t||"").trim().toUpperCase()!=="APAGAR"){ if(t!==null) toast("Texto não confere"); return; }
   rawWrite("db-before-wipe.json", JSON.stringify(db));
   db = emptyDB(); save(); stack=[]; setTab("home"); toast("Dados apagados");
 }
