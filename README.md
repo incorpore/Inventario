@@ -29,6 +29,8 @@ Sem servidor. Os dados ficam só no aparelho, com exportação e backup opcional
   miniatura opcional no PDF. A câmera não pede permissão (o app não declara CAMERA).
 - **Seleção múltipla** na lista de itens e dentro de cada armazém: editar categoria/estado, excluir, mover ou gerar PDF
   de vários de uma vez
+- **Categorias** (Mais → Categorias): ver itens, renomear, mover/mesclar com outra categoria
+  e excluir (os itens ficam sem categoria); filtro exato por categoria na lista
 - **Arrastar para a esquerda** para excluir (com “Desfazer” por 5 s)
 - **Histórico** completo de movimentações
 - **Imprimir / PDF**: todos os itens, um armazém (com ou sem os de dentro), itens selecionados

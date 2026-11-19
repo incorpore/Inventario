@@ -598,7 +598,7 @@ function render(){
   hideTip();
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
   const c = cur();
-  const views = {home:vHome, items:vItems, storages:vStorages, history:vHistory, more:vMore, storage:vStorage, item:vItem};
+  const views = {home:vHome, items:vItems, storages:vStorages, history:vHistory, more:vMore, storage:vStorage, item:vItem, cats:vCats};
   (views[c.v] || vHome)(c);
   selBar();
 }
@@ -780,7 +780,7 @@ function vHome(){
   // gráficos
   const byCat = {}, byCatN = {};
   db.items.forEach(i=>{ const k = i.category || "Sem categoria"; byCat[k] = (byCat[k]||0) + itemTotal(i); byCatN[k] = (byCatN[k]||0) + 1; });
-  const catRows = topN(ui.chart==="value" ? byCat : byCatN, 6).map(r=>({...r, on: r.label!=="Outros" ? `openItems('all', ${esc(JSON.stringify(r.label==="Sem categoria"?"":r.label))})` : ""}));
+  const catRows = topN(ui.chart==="value" ? byCat : byCatN, 6).map(r=>({...r, on: r.label!=="Outros" ? `openItems(${esc(JSON.stringify("cat:"+(r.label==="Sem categoria"?"":r.label)))})` : `go({v:'cats'})`}));
   const byRoot = {}, rootVal = {};
   db.items.forEach(i=>{ const r = rootOf(i.storageId); if(!r) return; byRoot[r.id] = (byRoot[r.id]||0)+1; rootVal[r.id] = (rootVal[r.id]||0)+itemTotal(i); });
   const stRows = Object.entries(byRoot).map(([id,v])=>({label:S(id).name, v, extra:rootVal[id]?money(rootVal[id]):"", on:`go({v:'storage',id:'${id}'})`})).sort((a,b)=>b.v-a.v).slice(0,6);
@@ -814,7 +814,7 @@ function vHome(){
     </div>
 
     ${nItems?`<div class="card chart">
-      <div class="chead"><div><h3>Por categoria</h3><div class="csub">${ui.chart==="value"?"Valor total em cada categoria":"Quantidade de itens cadastrados"}</div></div>
+      <div class="chead"><div><h3>Por categoria <a class="crumb" style="font-size:12.5px;font-weight:600;margin-left:4px;cursor:pointer;color:var(--primary)" onclick="go({v:'cats'})">Gerenciar</a></h3><div class="csub">${ui.chart==="value"?"Valor total em cada categoria":"Quantidade de itens cadastrados"}</div></div>
       <div class="seg"><button class="${ui.chart==="value"?"on":""}" onclick="ui.chart='value';vHome()">Valor</button><button class="${ui.chart==="count"?"on":""}" onclick="ui.chart='count';vHome()">Itens</button></div></div>
       ${catRows.length?hbars(catRows, ui.chart==="value"?moneyShort:(v=>v+" "+(v>1?"itens":"item")), 1):`<p class="hint">Informe o valor dos itens para ver este gráfico.</p>`}
     </div>
@@ -864,8 +864,9 @@ function vItems(){
     const q = $("#q"); q.value = ui.q;
     q.oninput = () => { ui.q = q.value; listItems(); };
   }
-  const chips = [["all","Todos"],["out","Emprestados"],["low","Estoque baixo"],["zero","Zerados"],...CONDS.map(c=>["c:"+c,c])];
-  $("#chips").innerHTML = chips.map(([k,l])=>`<button class="chip ${ui.filter===k?"on":""}" onclick="ui.filter='${k}';vItems()">${l}</button>`).join("");
+  const chips = [...(ui.filter.startsWith("cat:") ? [[ui.filter, `${ui.filter.slice(4)||"Sem categoria"} ✕`]] : []), ["all","Todos"],["out","Emprestados"],["low","Estoque baixo"],["zero","Zerados"],...CONDS.map(c=>["c:"+c,c])];
+  $("#chips").innerHTML = chips.map(([k,l])=>`<button class="chip ${ui.filter===k?"on":""}" data-f="${esc(k)}">${esc(l)}</button>`).join("");
+  $("#chips").onclick = e => { const b = e.target.closest("[data-f]"); if(!b) return; const k = b.dataset.f; ui.filter = (k===ui.filter && k.startsWith("cat:")) ? "all" : k; vItems(); };
   listItems();
   fab(inSel() ? null : () => itemForm());
 }
@@ -877,6 +878,7 @@ function filteredItems(){
     if(f==="low" && !isLow(i)) return false;
     if(f==="zero" && i.qty!==0) return false;
     if(f.startsWith("c:") && i.condition!==f.slice(2)) return false;
+    if(f.startsWith("cat:") && (i.category||"")!==f.slice(4)) return false;
     if(!terms.length) return true;
     const hay = norm([i.name,i.category,i.notes,i.condition,i.unit,path(i.storageId),...openLoans(i.id).map(l=>l.who)].join(" "));
     return terms.every(t => hay.includes(t));
@@ -984,6 +986,84 @@ function vHistory(){
   fab(null);
 }
 
+/* ====================== Categorias ====================== */
+function catList(){ return [...new Set(db.items.map(i=>i.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR")); }
+const catItems = c => db.items.filter(i=>(i.category||"")===c);
+const catArg = c => esc(JSON.stringify(c));
+function vCats(){
+  const cats = catList(), none = catItems("");
+  header("Categorias", `${cats.length} categoria${cats.length!==1?"s":""}`, true);
+  const row = (c, label, its) => { const val = its.reduce((a,i)=>a+itemTotal(i),0);
+    return `<div class="li" onclick='catSheet(${catArg(c)})'><div class="tile ${c?"t5":""}">${icon("tag")}</div>
+      <div class="main"><div class="t">${esc(label)}</div><div class="s">${its.length} ite${its.length!==1?"ns":"m"}${val?" · "+money(val):""}</div></div><span class="chev">${icon("chev")}</span></div>`; };
+  $("#app").innerHTML = cats.length || none.length ? `
+    ${cats.length?`<div class="card">${cats.map(c=>row(c, c, catItems(c))).join("")}</div>`:`<div class="card empty" style="padding:24px">Nenhuma categoria ainda.<br>Defina a categoria nos itens (um a um ou em lote).</div>`}
+    ${none.length?`<div class="sec">Sem categoria</div><div class="card">${row("", "Sem categoria", none)}</div>`:""}
+    <p class="hint" style="text-align:center">Toque em uma categoria para ver os itens, renomear, mover ou excluir.<br>As categorias existem enquanto houver itens nelas.</p>`
+    : `<div class="empty"><div class="tile big t5">${icon("tag")}</div>Nenhum item cadastrado.</div>`;
+  fab(null);
+}
+function catSheet(c){
+  const n = catItems(c).length, label = c || "Sem categoria";
+  const act = (ic, col, t, sub, fn) => `<div class="li" onclick='${fn}'><div class="tile t${col}">${icon(ic)}</div><div class="main"><div class="t">${t}</div><div class="s">${sub}</div></div><span class="chev">${icon("chev")}</span></div>`;
+  openSheet(`${esc(label)}`, `<p class="hint" style="margin-bottom:10px">${n} ite${n!==1?"ns":"m"} nesta categoria</p>
+    <div class="card" style="margin:0">
+      ${act("list",1,"Ver itens","Abrir a lista filtrada",`closeSheet();openItems(${catArg("cat:"+c)})`)}
+      ${c?act("edit",7,"Renomear","Muda o nome em todos os itens",`catRename(${catArg(c)})`):""}
+      ${act("swap",3,c?"Mover itens para outra categoria":"Definir categoria para estes itens",c?"Junta com uma categoria existente ou nova":"Escolha uma categoria existente ou nova",`catMove(${catArg(c)})`)}
+      ${c?act("trash",8,"Excluir categoria","Os itens ficam sem categoria",`catDelete(${catArg(c)})`):""}
+    </div>`, ()=>{}, null);
+}
+/* aplica nova categoria a todos os itens de "from"; mescla se já existir (sem diferenciar maiúsculas/acentos) */
+function catApply(from, to){
+  to = (to||"").trim();
+  const existing = catList().find(c => c!==from && norm(c)===norm(to));
+  if(existing) to = existing;
+  const its = catItems(from);
+  its.forEach(i => { i.category = to; i.updatedAt = Date.now(); });
+  save();
+  return {to, n:its.length, merged:!!existing};
+}
+function catRename(c){
+  const n = catItems(c).length;
+  openSheet(`Renomear categoria`, `
+    <label>Novo nome</label><input name="name" value="${esc(c)}" required autofocus autocomplete="off">
+    <p class="hint">Altera ${n} ite${n!==1?"ns":"m"}. Se o nome já existir, as categorias são mescladas.</p>`, d => {
+    const to = d.name.trim();
+    if(!to){ toast("Informe o nome"); return false; }
+    if(to===c) return;
+    const r = catApply(c, to);
+    toast(r.merged ? `Mesclada com “${r.to}” (${r.n} itens)` : `Renomeada para “${r.to}”`);
+  }, "Renomear");
+}
+function catMove(c){
+  const others = catList().filter(x=>x!==c), n = catItems(c).length;
+  openSheet(c ? `Mover itens de “${esc(c)}”` : "Definir categoria", `
+    <label>Para a categoria</label>
+    <input name="to" list="mcats" placeholder="Escolha ou digite uma nova" autocomplete="off" required>
+    <datalist id="mcats">${others.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+    ${others.length?`<div class="chips mcat" style="margin:8px 0 0;padding:0;flex-wrap:wrap">${others.map(x=>`<button type="button" class="chip" data-c="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
+    <p class="hint">${n} ite${n!==1?"ns":"m"} ${c?`sairão de “${esc(c)}”, que deixará de existir`:"receberão esta categoria"}.</p>`, d => {
+    const to = d.to.trim();
+    if(!to){ toast("Escolha a categoria"); return false; }
+    if(to===c) return;
+    const r = catApply(c, to);
+    toast(`${r.n} ite${r.n!==1?"ns movidos":"m movido"} para “${r.to}”`);
+  }, "Mover", {onOpen: form => {
+    const inp = form.querySelector("input[name=to]");
+    const mark = () => form.querySelectorAll(".mcat .chip").forEach(b => b.classList.toggle("on", b.dataset.c===inp.value.trim()));
+    inp.oninput = mark;
+    form.querySelectorAll(".mcat .chip").forEach(b => b.onclick = () => { inp.value = b.dataset.c; mark(); });
+  }});
+}
+async function catDelete(c){
+  closeSheet();
+  const n = catItems(c).length;
+  if(!await ask(`Excluir a categoria “${c}”?\nOs ${n} ite${n!==1?"ns":"m"} ficarão sem categoria (eles não são excluídos).\nPara juntar com outra categoria, use “Mover itens”.`, "Excluir categoria", true)) return;
+  catApply(c, "");
+  render(); toast(`Categoria “${c}” excluída`);
+}
+
 function menuRow(ic, c, title, sub, fn){
   return `<div class="li" onclick="${fn}"><div class="tile t${c}">${icon(ic)}</div><div class="main"><div class="t">${title}</div><div class="s">${sub}</div></div><span class="chev">${icon("chev")}</span></div>`;
 }
@@ -997,6 +1077,7 @@ function vMore(){
       ${menuRow("upload",3,"Importar JSON","Produtos novos ou restaurar um backup completo","importAny()")}
       ${menuRow("json",7,"Baixar JSON de exemplo","Modelo para cadastrar produtos em lote","downloadSample()")}
       ${menuRow("printer",2,"Imprimir / salvar PDF","Todos, por armazém, selecionados ou busca","printForm({scope:'all'})")}
+      ${menuRow("tag",5,"Categorias",`${catList().length} categorias · renomear, mover, excluir`,"go({v:'cats'})")}
     </div>
     <div class="sec">Backup na nuvem (S3)</div>
     <details class="card" ${has?"":"open"}>
@@ -1033,7 +1114,7 @@ function openSheet(title, body, onSubmit, submitLabel="Salvar", opts={}){
   closeSheet();
   sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
   sheetEl.innerHTML = `<form class="sheet" autocomplete="off"><div class="handle"></div><h2>${title}</h2>${body}
-    <div class="foot"><button type="button" class="btn ghost" data-close>Cancelar</button><button class="btn" type="submit">${submitLabel}</button></div></form>`;
+    <div class="foot"><button type="button" class="btn ghost" data-close>${submitLabel===null?"Fechar":"Cancelar"}</button>${submitLabel===null?"":`<button class="btn" type="submit">${submitLabel}</button>`}</div></form>`;
   sheetEl.onclick = e => { if(e.target===sheetEl || e.target.closest("[data-close]")) closeSheet(); };
   const form = sheetEl.querySelector("form");
   form.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(form)); if(onSubmit(d, form) !== false){ sheetCancel = null; closeSheet(); render(); } };
