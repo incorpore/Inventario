@@ -27,7 +27,7 @@ Sem servidor. Os dados ficam só no aparelho, com exportação e backup opcional
 - **Fotos** nos itens e armazéns (câmera ou galeria, várias por item): salvas em **WebP**
   (≈1280 px, ~60–150 KB cada, mais miniatura de 320 px), com visualizador, foto de capa e
   miniatura opcional no PDF. A câmera não pede permissão (o app não declara CAMERA).
-- **Seleção múltipla** na lista de itens e dentro de cada armazém: excluir, mover ou gerar PDF
+- **Seleção múltipla** na lista de itens e dentro de cada armazém: editar categoria/estado, excluir, mover ou gerar PDF
   de vários de uma vez
 - **Arrastar para a esquerda** para excluir (com “Desfazer” por 5 s)
 - **Histórico** completo de movimentações

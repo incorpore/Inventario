@@ -615,8 +615,9 @@ function selBar(){
   if(!inSel()){ if(b) b.remove(); return; }
   if(!b){ b = document.createElement("div"); b.id="selbar"; b.className="selbar"; document.body.appendChild(b); }
   const n = ui.sel.size, dis = n ? "" : "disabled";
-  b.innerHTML = `<b>${n} selecionado${n!==1?"s":""}</b>
+  b.innerHTML = `<b>${n}<small style="font-weight:500;opacity:.75"> selec.</small></b>
     <button class="sbtn" onclick="selAll()">${icon("checksq")}Todos</button>
+    <button class="sbtn" onclick="bulkEdit()" ${dis}>${icon("tag")}Editar</button>
     <button class="sbtn" onclick="bulkMove()" ${dis}>${icon("swap")}Mover</button>
     <button class="sbtn" onclick="printForm({scope:'sel'})" ${dis}>${icon("printer")}PDF</button>
     <button class="sbtn danger" onclick="bulkDelete()" ${dis}>${icon("trash")}Excluir</button>
@@ -639,6 +640,41 @@ async function bulkDelete(){
   db.items = db.items.filter(i=>!ids.has(i.id));
   save(); gcPhotos(photos); ui.selMode = false; ui.sel.clear(); render();
   toast(`${items.length} ite${items.length>1?"ns excluídos":"m excluído"}`);
+}
+function bulkEdit(){
+  const items = db.items.filter(i=>ui.sel.has(i.id)); if(!items.length) return;
+  const n = items.length;
+  const cats = [...new Set(db.items.map(i=>i.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  const cur = [...new Set(items.map(i=>i.category||""))];
+  const curTxt = cur.length===1 ? (cur[0] ? `todos em “${esc(cur[0])}”` : "todos sem categoria") : `${cur.length} categorias diferentes`;
+  openSheet(`Editar ${n} ite${n>1?"ns":"m"}`, `
+    <label>Categoria <span style="font-weight:500;color:var(--muted)">· atual: ${curTxt}</span></label>
+    <div class="radio">
+      <label><input type="radio" name="cm" value="keep" checked><span>Manter</span></label>
+      <label><input type="radio" name="cm" value="set"><span>Definir</span></label>
+      <label><input type="radio" name="cm" value="clear"><span>Remover</span></label></div>
+    <input name="category" list="bcats" placeholder="Digite ou escolha a categoria" style="margin-top:8px" autocomplete="off">
+    <datalist id="bcats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+    ${cats.length?`<div class="chips bcat" style="margin:8px 0 0;padding:0;flex-wrap:wrap">${cats.map(c=>`<button type="button" class="chip" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>`:""}
+    <label>Estado</label><select name="condition"><option value="__keep">Manter o atual</option><option value="">Sem estado</option>${CONDS.map(c=>`<option>${c}</option>`).join("")}</select>
+    <p class="hint">Só os campos alterados são aplicados aos itens selecionados.</p>`, d => {
+    const cat = (d.category||"").trim();
+    if(d.cm==="set" && !cat){ toast("Informe a categoria"); return false; }
+    if(d.cm==="keep" && d.condition==="__keep"){ toast("Nada para alterar"); return false; }
+    items.forEach(i => {
+      if(d.cm==="set") i.category = cat; else if(d.cm==="clear") i.category = "";
+      if(d.condition!=="__keep") i.condition = d.condition;
+      i.updatedAt = Date.now();
+    });
+    save(); ui.selMode = false; ui.sel.clear();
+    toast(d.cm==="set" ? `Categoria “${cat}” aplicada a ${n} ite${n>1?"ns":"m"}` : d.cm==="clear" ? `Categoria removida de ${n} ite${n>1?"ns":"m"}` : `${n} ite${n>1?"ns atualizados":"m atualizado"}`);
+  }, "Aplicar", {onOpen: form => {
+    const inp = form.querySelector("input[name=category]"), setR = form.querySelector("input[name=cm][value=set]");
+    const mark = () => form.querySelectorAll(".bcat .chip").forEach(b => b.classList.toggle("on", b.dataset.c===inp.value.trim()));
+    inp.oninput = () => { setR.checked = !!inp.value.trim() || setR.checked; mark(); };
+    form.querySelectorAll("input[name=cm]").forEach(r => r.onchange = () => { if(r.value==="clear"){ inp.value = ""; mark(); } else if(r.value==="set") inp.focus(); });
+    form.querySelectorAll(".bcat .chip").forEach(b => b.onclick = () => { inp.value = b.dataset.c; setR.checked = true; mark(); });
+  }});
 }
 function bulkMove(){
   const items = db.items.filter(i=>ui.sel.has(i.id)); if(!items.length) return;
