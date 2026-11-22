@@ -222,6 +222,23 @@ body:has(#selbar) .toast{bottom:calc(160px + env(safe-area-inset-bottom))}
 .toast.undo{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 18px;left:16px;right:16px;transform:none;max-width:560px;margin:0 auto;text-align:left}
 .toast.undo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .toast.undo button{border:0;background:color-mix(in srgb,var(--bg) 18%,transparent);color:var(--bg);font-weight:750;padding:8px 12px;border-radius:10px;cursor:pointer}
+.combo{position:relative}
+.combo>input{padding-right:44px}
+.combo-btn{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:10px}
+.combo-btn .i{transition:transform .15s}
+.combo.open .combo-btn .i{transform:rotate(180deg)}
+.combo.open>input{border-color:var(--primary)}
+.combo-list{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 34px rgba(15,23,42,.2);max-height:250px;overflow:auto;padding:4px;min-width:180px}
+.combo.open .combo-list{display:block;animation:fade .12s}
+.combo-opt{display:flex;align-items:center;gap:8px;padding:12px;border-radius:10px;cursor:pointer;font-size:15px;min-height:44px}
+.combo-opt:active,.combo-opt.on{background:var(--primary-soft)}
+.combo-opt.on b{color:var(--primary)}
+.combo-opt b{font-weight:650;white-space:nowrap}
+.combo-opt span{color:var(--muted);font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.combo-opt em{font-style:normal;font-size:11.5px;font-weight:650;color:var(--muted);background:var(--card2);padding:2px 8px;border-radius:999px;margin-left:auto;flex:none}
+.combo-opt.add{color:var(--primary);font-weight:650;border-bottom:1px solid var(--line);border-radius:10px 10px 0 0}
+.combo-sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 12px 4px}
+.combo-empty{padding:12px;color:var(--muted);font-size:13px}
 .tile.pic{padding:0;overflow:hidden;background:var(--card2)}
 .tile.pic img{width:100%;height:100%;object-fit:cover;display:block}
 .cover{position:relative;border-radius:22px;overflow:hidden;margin:6px 0 10px;background:var(--card2);aspect-ratio:4/3;max-height:360px;width:100%;cursor:pointer;box-shadow:var(--shadow)}
@@ -323,6 +340,7 @@ const IC = {
   x:'<path d="M18 6 6 18M6 6l12 12"/>',
   back:'<path d="m15 18-6-6 6-6"/>',
   chev:'<path d="m9 18 6-6-6-6"/>',
+  chevdown:'<path d="m6 9 6 6 6-6"/>',
   alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><path d="M7.5 7.5h.01" stroke-width="3"/>',
@@ -400,6 +418,62 @@ function dialog({title="", msg="", ok="OK", cancel=null, danger=false, input=nul
 }
 const ask = (msg, ok="Confirmar", danger=false, title="") => dialog({title, msg, ok, cancel:"Cancelar", danger});
 window.alert = msg => { dialog({msg:String(msg)}); };
+
+/* ====================== Campo com lista (combo) ======================
+   Substitui o <datalist>, que no Android é ruim de usar. */
+const UNIT_NAMES = {un:"unidade", "pç":"peça", par:"par", dz:"dúzia", jogo:"jogo", kit:"kit", cx:"caixa", pct:"pacote", saco:"saco", rolo:"rolo", lata:"lata", "galão":"galão", folha:"folha",
+  kg:"quilograma", g:"grama", L:"litro", mL:"mililitro", m:"metro", cm:"centímetro", mm:"milímetro", "m²":"metro quadrado", "m³":"metro cúbico"};
+const countBy = arr => arr.reduce((m,x)=>(m[x]=(m[x]||0)+1, m), {});
+const COMBO = {
+  unit: () => {
+    const used = countBy(db.items.map(i=>i.unit).filter(Boolean));
+    const top = Object.keys(used).sort((a,b)=>used[b]-used[a]);
+    const rest = Object.keys(UNIT_NAMES).filter(u=>!used[u]);
+    return [...top.map(u=>({v:u, sub:UNIT_NAMES[u]||"", n:used[u], g:"Usadas"})), ...rest.map(u=>({v:u, sub:UNIT_NAMES[u], g:"Outras unidades"}))];
+  },
+  cat: () => { const used = countBy(db.items.map(i=>i.category).filter(Boolean)); return Object.keys(used).sort((a,b)=>a.localeCompare(b,"pt-BR")).map(c=>({v:c, n:used[c]})); },
+  people: () => { const used = countBy(db.loans.map(l=>l.who).filter(Boolean)); return Object.keys(used).sort((a,b)=>used[b]-used[a]).map(p=>({v:p, n:used[p]})); },
+};
+function initCombos(root){
+  root.querySelectorAll("input[data-combo]").forEach(inp => {
+    if(inp.dataset.comboOn) return; inp.dataset.comboOn = "1";
+    const kind = inp.dataset.combo, exclude = inp.dataset.exclude || "";
+    const wrap = document.createElement("div"); wrap.className = "combo";
+    inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+    inp.setAttribute("autocomplete", "off");
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "combo-btn"; btn.tabIndex = -1; btn.setAttribute("aria-label","Abrir lista"); btn.innerHTML = icon("chevdown");
+    const list = document.createElement("div"); list.className = "combo-list";
+    wrap.append(btn, list);
+    let open = false, picking = false;
+    const draw = () => {
+      const typed = inp.value.trim(), q = norm(typed);
+      const opts = COMBO[kind]().filter(o => o.v!==exclude);
+      const exact = opts.some(o => norm(o.v)===q);
+      const shown = (!q || exact) ? opts : opts.filter(o => norm(o.v).includes(q) || norm(o.sub||"").includes(q));
+      const add = q && !exact ? `<div class="combo-opt add" data-v="${esc(typed)}">${icon("plus","sm")} ${kind==="cat"?"Nova categoria":"Usar"} “${esc(typed)}”</div>` : "";
+      let lastG = null;
+      const rows = shown.map(o => { const head = o.g && o.g!==lastG && (lastG = o.g) ? `<div class="combo-sec">${o.g}</div>` : "";
+        return head + `<div class="combo-opt ${norm(o.v)===q?"on":""}" data-v="${esc(o.v)}"><b>${esc(o.v)}</b>${o.sub&&o.sub!==o.v?`<span>${esc(o.sub)}</span>`:"<span></span>"}${o.n?`<em>${o.n}</em>`:""}</div>`; }).join("");
+      list.innerHTML = add + rows || `<div class="combo-empty">${kind==="cat"?"Nenhuma categoria ainda — digite o nome para criar":kind==="people"?"Digite um nome":"Sem sugestões"}</div>`;
+    };
+    const show = () => { draw(); wrap.classList.add("open"); open = true; requestAnimationFrame(()=>{ try{ list.scrollIntoView({block:"nearest", behavior:"smooth"}); }catch(e){} }); };
+    const hide = () => { wrap.classList.remove("open"); open = false; };
+    const pick = v => { hide(); picking = true; inp.value = v; inp.dispatchEvent(new Event("input", {bubbles:true})); inp.dispatchEvent(new Event("change", {bubbles:true})); picking = false; inp.blur(); };
+    inp.addEventListener("focus", () => { show(); if(inp.value) setTimeout(()=>{ try{ inp.select(); }catch(e){} }, 0); });
+    inp.addEventListener("click", () => { if(!open) show(); });
+    inp.addEventListener("input", () => { if(picking) return; open ? draw() : show(); });
+    inp.addEventListener("blur", () => setTimeout(()=>{ if(document.activeElement!==inp) hide(); }, 200));
+    inp.addEventListener("keydown", e => {
+      if(e.key==="Escape"){ hide(); }
+      else if(e.key==="Enter" && open){ const first = list.querySelector("[data-v]"); if(first){ e.preventDefault(); pick(first.dataset.v); } }
+    });
+    const keep = e => e.preventDefault();
+    list.addEventListener("pointerdown", keep); list.addEventListener("mousedown", keep);
+    btn.addEventListener("mousedown", keep);
+    btn.addEventListener("click", () => { if(open){ hide(); inp.blur(); } else { inp.focus(); show(); } });
+    list.addEventListener("click", e => { const o = e.target.closest("[data-v]"); if(o) pick(o.dataset.v); });
+  });
+}
 
 /* ====================== Fotos (WebP) ====================== */
 const PH_BASE = "https://appassets.androidplatform.net/photos/";
@@ -656,8 +730,7 @@ function bulkEdit(){
       <label><input type="radio" name="cm" value="keep" checked><span>Manter</span></label>
       <label><input type="radio" name="cm" value="set"><span>Definir</span></label>
       <label><input type="radio" name="cm" value="clear"><span>Remover</span></label></div>
-    <input name="category" list="bcats" placeholder="Digite ou escolha a categoria" style="margin-top:8px" autocomplete="off">
-    <datalist id="bcats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+    <div style="margin-top:8px"><input name="category" data-combo="cat" placeholder="Toque para escolher ou digite uma nova"></div>
     ${cats.length?`<div class="chips bcat" style="margin:8px 0 0;padding:0;flex-wrap:wrap">${cats.map(c=>`<button type="button" class="chip" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>`:""}
     <label>Estado</label><select name="condition"><option value="__keep">Manter o atual</option><option value="">Sem estado</option>${CONDS.map(c=>`<option>${c}</option>`).join("")}</select>
     <p class="hint">Só os campos alterados são aplicados aos itens selecionados.</p>`, d => {
@@ -1044,8 +1117,7 @@ function catMove(c){
   const others = catList().filter(x=>x!==c), n = catItems(c).length;
   openSheet(c ? `Mover itens de “${esc(c)}”` : "Definir categoria", `
     <label>Para a categoria</label>
-    <input name="to" list="mcats" placeholder="Escolha ou digite uma nova" autocomplete="off" required>
-    <datalist id="mcats">${others.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+    <input name="to" data-combo="cat" data-exclude="${esc(c)}" placeholder="Toque para escolher ou digite uma nova" required>
     ${others.length?`<div class="chips mcat" style="margin:8px 0 0;padding:0;flex-wrap:wrap">${others.map(x=>`<button type="button" class="chip" data-c="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
     <p class="hint">${n} ite${n!==1?"ns":"m"} ${c?`sairão de “${esc(c)}”, que deixará de existir`:"receberão esta categoria"}.</p>`, d => {
     const to = d.to.trim();
@@ -1124,6 +1196,7 @@ function openSheet(title, body, onSubmit, submitLabel="Salvar", opts={}){
   form.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(form)); if(onSubmit(d, form) !== false){ sheetCancel = null; closeSheet(); render(); } };
   document.body.appendChild(sheetEl);
   sheetCancel = opts.onCancel || null;
+  initCombos(form);
   if(opts.onOpen) opts.onOpen(form);
   const first = form.querySelector("[autofocus]"); if(first) setTimeout(()=>first.focus(), 80);
   return form;
@@ -1181,8 +1254,7 @@ function itemForm(id, storageId, copyFrom){
     <label>Nome *</label><input name="name" required value="${esc(base.name)}" placeholder="Ex.: Furadeira" ${id?"":"autofocus"}>
     <label>Fotos</label><div class="phrow phed"></div>
     <div class="row"><div><label>Quantidade</label><input name="qty" inputmode="decimal" value="${fq(base.qty)}"></div>
-    <div><label>Unidade</label><input name="unit" list="units" value="${esc(base.unit)}"></div></div>
-    <datalist id="units">${UNITS.map(u=>`<option value="${u}">`).join("")}</datalist>
+    <div><label>Unidade</label><input name="unit" data-combo="unit" value="${esc(base.unit)}"></div></div>
     <label>Armazém *</label><select name="storageId" required>${storageOptions(base.storageId)}</select>
     <label>Valor (R$)</label>
     <div class="row" style="align-items:center;gap:8px">
@@ -1193,8 +1265,7 @@ function itemForm(id, storageId, copyFrom){
     <p class="hint vcalc" style="min-height:1.2em"></p>
     <div class="row"><div><label>Estado</label><select name="condition"><option value="">—</option>${CONDS.map(c=>`<option ${c===base.condition?"selected":""}>${c}</option>`).join("")}</select></div>
     <div><label>Qtd. mínima</label><input name="minQty" inputmode="decimal" value="${base.minQty?fq(base.minQty):""}" placeholder="alerta"></div></div>
-    <label>Categoria</label><input name="category" list="cats" value="${esc(base.category)}" placeholder="Ex.: Ferramentas">
-    <datalist id="cats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+    <label>Categoria</label><input name="category" data-combo="cat" value="${esc(base.category)}" placeholder="Toque para escolher ou digite">
     <label>Observação</label><textarea name="notes" placeholder="Marca, modelo, cor, detalhes…">${esc(base.notes)}</textarea>`, (d, form) => {
     if(!d.name.trim()) return false;
     ui.lastSt = d.storageId;
@@ -1261,8 +1332,7 @@ function withdrawForm(id){
       <label><input type="radio" name="mode" value="emprestimo" checked><span>Vai voltar</span></label>
       <label><input type="radio" name="mode" value="retirada"><span>Baixa definitiva</span></label></div>
     <p class="hint">"Vai voltar" fica na lista de pendentes para devolução. "Baixa" é consumo, venda ou descarte.</p>
-    <label>Com quem / para quê</label><input name="who" list="people" placeholder="Ex.: João, obra da cozinha">
-    <datalist id="people">${people.map(p=>`<option value="${esc(p)}">`).join("")}</datalist>
+    <label>Com quem / para quê</label><input name="who" data-combo="people" placeholder="Ex.: João, obra da cozinha">
     <label>Observação</label><input name="note">`, d => {
     const q = num(d.qty);
     if(q<=0 || q>i.qty){ toast("Quantidade inválida"); return false; }
