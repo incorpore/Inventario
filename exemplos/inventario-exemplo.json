@@ -6,6 +6,7 @@
     "storage: nome do armazém ('Caixa A') ou caminho completo ('Garagem > Armário > Caixa A').",
     "Se o armazém não vier ou não for encontrado, o app pergunta onde colocar (ou cria o armazém).",
     "Também são aceitos nomes em português: nome, quantidade, unidade, valor, estado, categoria, observacao, minimo, armazem.",
+    "Valor: use value (por unidade) OU totalValue / valorTotal (valor total; o unitário é calculado pela quantidade).",
     "photos (opcional): lista de imagens em base64 ou 'data:image/jpeg;base64,...'. São convertidas para WebP ao importar."
   ],
   "_estados_validos": [
@@ -41,11 +42,12 @@
       "name": "Parafuso 4x40",
       "qty": 150,
       "unit": "un",
-      "value": 0.12,
+      "totalValue": 18,
       "condition": "Novo",
       "category": "Fixação",
       "minQty": 50,
-      "storage": "Caixa de parafusos"
+      "storage": "Caixa de parafusos",
+      "notes": "Comprei a caixa com 150 por R$ 18,00"
     },
     {
       "name": "Fita isolante",

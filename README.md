@@ -16,7 +16,7 @@ Sem servidor. Os dados ficam só no aparelho, com exportação e backup opcional
   de outro. Itens iguais podem ter a quantidade somada.
 
 - **Armazéns** aninhados (ex.: Garagem › Armário › Caixa A), com tipo, localização e observação
-- **Itens** com quantidade (aceita decimais), unidade de medida, **valor unitário (R$)**, estado, categoria,
+- **Itens** com quantidade (aceita decimais), unidade de medida, **valor (R$) por unidade ou pelo total** (o unitário é calculado pela quantidade), estado, categoria,
   quantidade mínima (alerta de estoque baixo) e observação
 - **Busca** instantânea (ignora acentos) por nome, categoria, observação, local ou pessoa;
   filtros: emprestados, estoque baixo, zerados, por estado

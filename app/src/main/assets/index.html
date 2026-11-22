@@ -291,6 +291,9 @@ const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLow
 const num = v => { if(typeof v==="number") return isFinite(v) ? Math.round(v*1000)/1000 : 0; let t = String(v ?? "").trim().replace(/[R$\s]/g, ""); if(t.includes(",")) t = t.replace(/\./g, "").replace(",", "."); const n = parseFloat(t); return isFinite(n) ? Math.round(n*1000)/1000 : 0; };
 const fq = n => (Math.round((n||0)*1000)/1000).toLocaleString("pt-BR");
 const money = n => (n||0).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+const numMoney = v => { let t = String(v ?? "").trim().replace(/[R$\s]/g, ""); if(t.includes(",")) t = t.replace(/\./g, "").replace(",", "."); const n = parseFloat(t); return isFinite(n) ? n : 0; };
+const moneyU = n => { n = n||0; return Math.abs(n - Math.round(n*100)/100) > 1e-9 ? n.toLocaleString("pt-BR", {style:"currency", currency:"BRL", minimumFractionDigits:2, maximumFractionDigits:4}) : money(n); };
+const moneyIn = n => !n ? "" : n.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits: Math.abs(n - Math.round(n*100)/100) > 1e-9 ? 4 : 2});
 const moneyShort = n => n>=1e6 ? "R$ "+(n/1e6).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mi" : n>=1e4 ? "R$ "+(n/1e3).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mil" : money(n);
 const fdate = t => new Date(t).toLocaleString("pt-BR", {day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
 const fday = t => new Date(t).toLocaleDateString("pt-BR", {day:"2-digit",month:"2-digit"});
@@ -713,7 +716,7 @@ function itemRow(i, showPath=true){
   return `<div class="sw" data-kind="item" data-id="${i.id}"><button class="sw-act" tabindex="-1">${icon("trash","sm")}Excluir</button><div class="li ${on?"sel":""}" onclick="rowTap('${i.id}')">
     ${sm?`<div class="tile chk">${icon("check")}</div>`:(i.photos&&i.photos.length)?`<div class="tile pic">${phImg(i.photos[0],true)}</div>`:tile(st&&st.type)}
     <div class="main"><div class="t">${esc(i.name)}${i.condition?`<span class="badge ${condClass(i.condition)}">${esc(i.condition)}</span>`:""}</div>
-    <div class="s">${showPath?esc(path(i.storageId)):esc(i.category||i.notes||"")}${i.value?" · "+money(i.value):""}</div></div>
+    <div class="s">${showPath?esc(path(i.storageId)):esc(i.category||i.notes||"")}${i.value?" · "+moneyU(i.value):""}</div></div>
     <div class="q" style="${low||i.qty===0?"color:var(--danger)":""}">${fq(i.qty)} <span style="font-weight:600">${esc(i.unit)}</span>${lq?`<small>+${fq(lq)} fora</small>`:low?`<small>mín ${fq(i.minQty)}</small>`:""}</div></div></div>`;
 }
 function storageRow(s){
@@ -957,7 +960,8 @@ function vItem({id}){
     <div class="card"><div class="kv">
       <div>Estado</div><div>${i.condition?`<span class="badge ${condClass(i.condition)}" style="margin:0">${esc(i.condition)}</span>`:"—"}</div>
       <div>Categoria</div><div>${esc(i.category||"—")}</div>
-      <div>Valor unitário</div><div>${i.value?money(i.value):"—"}</div>
+      <div>Valor unitário</div><div>${i.value?moneyU(i.value):"—"}</div>
+      ${i.value?`<div>Valor total</div><div>${money(itemTotal(i))}</div>`:""}
       ${i.minQty?`<div>Qtd. mínima</div><div>${fq(i.minQty)} ${esc(i.unit)}</div>`:""}
       <div>Observação</div><div style="white-space:pre-wrap">${esc(i.notes||"—")}</div>
       <div>Atualizado</div><div>${fdate(i.updatedAt||i.createdAt)}</div>
@@ -1172,6 +1176,7 @@ function itemForm(id, storageId, copyFrom){
   const base = id ? I(id) : copyFrom ? Object.assign({}, I(copyFrom), {qty:1, photos:[]}) : {name:"", qty:1, unit:"un", condition:"Bom", category:"", notes:"", minQty:0, storageId: storageId || (cur().v==="storage"?cur().id:"") || (S(ui.lastSt)?ui.lastSt:"")};
   const cats = [...new Set(db.items.map(i=>i.category).filter(Boolean))].sort();
   const ph = {list:(base.photos||[]).slice(), added:[], removed:[]};
+  const vmode = base.valueMode==="total" && base.qty>0 ? "total" : "unit";
   openSheet(id?"Editar item":"Novo item", `
     <label>Nome *</label><input name="name" required value="${esc(base.name)}" placeholder="Ex.: Furadeira" ${id?"":"autofocus"}>
     <label>Fotos</label><div class="phrow phed"></div>
@@ -1179,15 +1184,25 @@ function itemForm(id, storageId, copyFrom){
     <div><label>Unidade</label><input name="unit" list="units" value="${esc(base.unit)}"></div></div>
     <datalist id="units">${UNITS.map(u=>`<option value="${u}">`).join("")}</datalist>
     <label>Armazém *</label><select name="storageId" required>${storageOptions(base.storageId)}</select>
+    <label>Valor (R$)</label>
+    <div class="row" style="align-items:center;gap:8px">
+      <div class="seg vmode" style="padding:4px"><button type="button" data-m="unit" style="padding:8px 12px">Por unidade</button><button type="button" data-m="total" style="padding:8px 12px">Total</button></div>
+      <input name="value" inputmode="decimal" placeholder="0,00" autocomplete="off" value="${vmode==="total" ? moneyIn((base.value||0)*(base.qty||0)) : moneyIn(base.value||0)}">
+    </div>
+    <input type="hidden" name="vmode" value="${vmode}">
+    <p class="hint vcalc" style="min-height:1.2em"></p>
     <div class="row"><div><label>Estado</label><select name="condition"><option value="">—</option>${CONDS.map(c=>`<option ${c===base.condition?"selected":""}>${c}</option>`).join("")}</select></div>
-    <div><label>Valor unitário (R$)</label><input name="value" inputmode="decimal" value="${base.value?String(base.value).replace(".",","):""}" placeholder="0,00"></div></div>
-    <div class="row"><div><label>Categoria</label><input name="category" list="cats" value="${esc(base.category)}" placeholder="Ex.: Ferramentas"></div>
     <div><label>Qtd. mínima</label><input name="minQty" inputmode="decimal" value="${base.minQty?fq(base.minQty):""}" placeholder="alerta"></div></div>
+    <label>Categoria</label><input name="category" list="cats" value="${esc(base.category)}" placeholder="Ex.: Ferramentas">
     <datalist id="cats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
-    <label>Observação</label><textarea name="notes" placeholder="Marca, modelo, cor, detalhes…">${esc(base.notes)}</textarea>`, d => {
+    <label>Observação</label><textarea name="notes" placeholder="Marca, modelo, cor, detalhes…">${esc(base.notes)}</textarea>`, (d, form) => {
     if(!d.name.trim()) return false;
     ui.lastSt = d.storageId;
-    const vals = {name:d.name.trim(), qty:Math.max(0,num(d.qty)), unit:d.unit.trim()||"un", storageId:d.storageId, condition:d.condition, category:d.category.trim(), minQty:num(d.minQty), value:Math.round(num(d.value)*100)/100, notes:d.notes.trim(), photos:ph.list, updatedAt:Date.now()};
+    const vEl = form.querySelector("input[name=value]");
+    const qn = Math.max(0, num(d.qty)), vin = (vEl.dataset.exact && vEl.dataset.shown===d.value) ? +vEl.dataset.exact : numMoney(d.value);
+    if(d.vmode==="total" && vin>0 && !(qn>0)){ toast("Para usar o valor total, informe a quantidade"); return false; }
+    const unitValue = d.vmode==="total" ? (qn>0 ? Math.round(vin/qn*1e6)/1e6 : 0) : Math.round(vin*1e4)/1e4;
+    const vals = {name:d.name.trim(), qty:qn, unit:d.unit.trim()||"un", storageId:d.storageId, condition:d.condition, category:d.category.trim(), minQty:num(d.minQty), value:unitValue, valueMode:d.vmode==="total"?"total":"unit", notes:d.notes.trim(), photos:ph.list, updatedAt:Date.now()};
     if(id){
       const it = I(id), oldQty = it.qty, oldSt = it.storageId;
       if(oldSt!==vals.storageId) logMove("transferencia", it, it.qty, {from:path(oldSt), to:path(vals.storageId), note:"edição"});
@@ -1199,7 +1214,31 @@ function itemForm(id, storageId, copyFrom){
       db.items.push(it); logMove("criado", it, it.qty, {where:path(it.storageId)}); toast("Item adicionado");
     }
     save(); gcPhotos(ph.removed);
-  }, "Salvar", {onOpen: form => bindPhotoEditor(form, ph), onCancel: () => ph.added.forEach(rmPhoto)});
+  }, "Salvar", {onOpen: form => { bindPhotoEditor(form, ph); bindValueMode(form, vmode==="total" ? (base.value||0)*(base.qty||0) : (base.value||0)); }, onCancel: () => ph.added.forEach(rmPhoto)});
+}
+/* valor por unidade x total: converte ao trocar e mostra o cálculo */
+function bindValueMode(form, initial){
+  const qty = form.querySelector("input[name=qty]"), val = form.querySelector("input[name=value]"),
+        mode = form.querySelector("input[name=vmode]"), unit = form.querySelector("input[name=unit]"),
+        hint = form.querySelector(".vcalc"), btns = form.querySelectorAll(".vmode button");
+  const setExact = n => { val.dataset.exact = String(n); val.value = moneyIn(n); val.dataset.shown = val.value; };
+  const cur = () => (val.dataset.exact && val.dataset.shown===val.value) ? +val.dataset.exact : numMoney(val.value);
+  if(initial) setExact(initial);
+  const calc = () => {
+    btns.forEach(b => b.classList.toggle("on", b.dataset.m===mode.value));
+    const q = num(qty.value), v = cur(), u = (unit.value||"un").trim();
+    if(!val.value.trim() || !v){ hint.textContent = mode.value==="total" ? "Informe o valor total; o unitário é calculado pela quantidade." : ""; return; }
+    if(mode.value==="unit") hint.textContent = q>0 ? `Total: ${money(v*q)} (${fq(q)} ${u} × ${moneyU(v)})` : "";
+    else hint.textContent = q>0 ? `Valor unitário: ${moneyU(v/q)} por ${u}` : "⚠ Informe a quantidade para calcular o valor unitário";
+  };
+  btns.forEach(b => b.onclick = () => {
+    const m = b.dataset.m; if(m===mode.value) return;
+    const q = num(qty.value), v = cur();
+    if(val.value.trim() && v && q>0) setExact(m==="total" ? v*q : v/q);
+    mode.value = m; calc(); val.focus();
+  });
+  [qty, val, unit].forEach(el => el.addEventListener("input", calc));
+  calc();
 }
 async function deleteItem(id){
   const i = I(id);
@@ -1328,7 +1367,7 @@ function reportHTML(title, sub, items, op){
       `<td><b>${esc(i.name)}</b></td>`,
       `<td class="n">${fq(i.qty)} ${esc(i.unit)}${lq?`<br><small>+${fq(lq)} fora</small>`:""}</td>`,
       op.cond&&`<td>${esc(i.condition||"")}</td>`, op.cat&&`<td>${esc(i.category||"")}</td>`,
-      op.values&&`<td class="n">${i.value?money(i.value):""}</td>`, op.values&&`<td class="n">${i.value?money(itemTotal(i)):""}</td>`,
+      op.values&&`<td class="n">${i.value?moneyU(i.value):""}</td>`, op.values&&`<td class="n">${i.value?money(itemTotal(i)):""}</td>`,
       op.notes&&`<td class="o">${esc(i.notes||"")}</td>`, !op.group&&`<td>${esc(path(i.storageId))}</td>`].filter(Boolean).join("")}</tr>`; };
   const sum = l => l.reduce((a,i)=>a+itemTotal(i),0);
   const table = (l) => `<table><thead><tr>${cols.map(([h,cl])=>`<th class="${cl}">${h}</th>`).join("")}</tr></thead><tbody>${l.map(row).join("")}</tbody>
@@ -1398,13 +1437,14 @@ const SAMPLE = {
     "storage: nome do armazém ('Caixa A') ou caminho completo ('Garagem > Armário > Caixa A').",
     "Se o armazém não vier ou não for encontrado, o app pergunta onde colocar (ou cria o armazém).",
     "Também são aceitos nomes em português: nome, quantidade, unidade, valor, estado, categoria, observacao, minimo, armazem.",
+    "Valor: use value (por unidade) OU totalValue / valorTotal (valor total; o unitário é calculado pela quantidade).",
     "photos (opcional): lista de imagens em base64 ou 'data:image/jpeg;base64,...'. São convertidas para WebP ao importar."
   ],
   _estados_validos: ["Novo","Bom","Usado","Desgastado","Danificado","Para conserto"],
   items: [
     {name:"Furadeira de impacto", qty:1, unit:"un", value:349.90, condition:"Bom", category:"Ferramentas", notes:"Bosch 650W, com maleta", storage:"Garagem > Armário de ferramentas"},
     {name:"Broca para concreto 8mm", qty:4, unit:"un", value:12.5, condition:"Novo", category:"Ferramentas", minQty:2, storage:"Garagem > Armário de ferramentas"},
-    {name:"Parafuso 4x40", qty:150, unit:"un", value:0.12, condition:"Novo", category:"Fixação", minQty:50, storage:"Caixa de parafusos"},
+    {name:"Parafuso 4x40", qty:150, unit:"un", totalValue:18, condition:"Novo", category:"Fixação", minQty:50, storage:"Caixa de parafusos", notes:"Comprei a caixa com 150 por R$ 18,00"},
     {name:"Fita isolante", qty:3, unit:"rolo", value:6.9, category:"Elétrica", storage:"Caixa de elétrica"},
     {name:"Extensão 10m", qty:2, unit:"un", value:45, condition:"Usado", category:"Elétrica"},
     {nome:"Lâmpada LED 9W", quantidade:6, unidade:"un", valor:"8,99", estado:"Novo", categoria:"Elétrica", armazem:"Caixa de elétrica"},
@@ -1494,7 +1534,9 @@ function importProducts(raw, photoData={}){
     const label = String(pick(o,"storage","armazem","armazém","local","localizacao","storagePath") ?? "").trim();
     const st = resolveStorage(label, pick(o,"storageId"));
     rows.push({name, qty:Math.max(0, num(pick(o,"qty","quantidade","qtd","quantity") ?? 1)), unit:String(pick(o,"unit","unidade","un") ?? "un").trim()||"un",
-      value:Math.round(num(pick(o,"value","valor","preco","preço","price") ?? 0)*100)/100, condition:condOk,
+      value:(()=>{ const u = num(pick(o,"value","valor","preco","preço","price","valorUnitario","unitValue") ?? 0); if(u) return Math.round(u*1e4)/1e4;
+        const t = num(pick(o,"totalValue","valorTotal","valor_total","total") ?? 0), q = num(pick(o,"qty","quantidade","qtd","quantity") ?? 1);
+        return t && q>0 ? Math.round(t/q*1e6)/1e6 : 0; })(), condition:condOk,
       category:String(pick(o,"category","categoria") ?? "").trim(), notes:String(pick(o,"notes","observacao","observação","obs","nota") ?? "").trim(),
       minQty:num(pick(o,"minQty","minimo","mínimo","qtdMinima") ?? 0), label, storageId: st ? st.id : "",
       photos:(()=>{ const p = pick(o,"photos","fotos","photo","foto"); return (Array.isArray(p) ? p : p ? [p] : []).map(x => typeof x!=="string" ? null : photoData[x] ? {id:x, b64:photoData[x]} : (x.length<60 && hasPhoto(x)) ? {id:x} : x.length>100 ? {id:"p"+uid(), b64:x.replace(/^data:[^,]*,/,"")} : null).filter(Boolean); })()});
